@@ -11,7 +11,7 @@ export async function POST(req) {
   try {
     const { url } = schema.parse(await req.json());
 
-    // 1. Extract YouTube Video ID & Title
+    // 1. YouTube Title & Incident Type
     const videoId = url.match(/v=([0-9A-Za-z_-]{11})/)?.[1] || '';
     let title = 'unknown incident';
     let incidentType = 'general contact';
@@ -34,9 +34,9 @@ export async function POST(req) {
       }
     }
 
-    // 2. Load & Search Dataset
+    // 2. Dataset Search & Stats
     let matches = [];
-    let datasetAvgFaultA = 81; // fallback
+    let datasetAvgFaultA = 81;
     try {
       const res = await fetch('/simracingstewards_28k.csv', { signal: controller.signal });
       if (res.ok) {
@@ -55,7 +55,6 @@ export async function POST(req) {
         matches.sort((a, b) => b.score - a.score);
         matches = matches.slice(0, 5);
 
-        // Calculate real average fault % for Car A
         const validFaults = matches
           .map(m => parseFloat(m.fault_pct_driver_a || 0))
           .filter(f => !isNaN(f) && f >= 0);
@@ -73,33 +72,31 @@ export async function POST(req) {
 
     const confidence = matches.length >= 3 ? 'High' : matches.length >= 1 ? 'Medium' : 'Low';
 
-    // 3. ENHANCED PROMPT — DATA-DRIVEN + SIM RACING SLANG
-    const slangExamples = `
-SIM RACING LINGO (use 2-3 naturally in explanation/tips like r/simracingstewards comments):
-- Divebomb/Dove in late/Pulled the pin
-- Turned in like you weren't there/Turned across your nose
-- Used you as a guardrail/Collected you
-- Locked up the brakes/Smoke show
-- Held your line like a champ/Straight-lined it
-- Chicane police/Bus stop blues (for chicanes)
-- Rear-ended/T-boned meat
-- No overlap at apex/Off-throttle dive
-Tone: Neutral but sounds like a salty steward - conversational, no BS.
+    // 3. PROMPT – FRIENDLY, UNBIASED, COMMUNITY SLANG (APPROVED ONLY)
+    const approvedSlang = `
+COMMUNITY LANGUAGE (use 1–2 naturally in explanation/tips):
+- "turned in like you weren't even there"
+- "used you as a guardrail"
+- "divebombed the chicane"
+- "locked up and collected"
+- "held your line like a champ"
+Tone: Friendly, neutral, educational — like a helpful r/simracingstewards mod.
+No drama, no rage, no sarcasm. Just clear, fair, and relatable.
 `;
 
-    const prompt = `You are a grizzled sim racing steward from r/simracingstewards (10+ years iRacing/ACC).
+    const prompt = `You are a friendly, experienced sim racing steward helping drivers improve.
 
 INCIDENT:
 - Video: ${url}
 - Title: "${title}"
 - Type: ${incidentType}
 
-DATASET PRIOR (BASELINE FAULT %):
+DATASET PRIOR:
 ${datasetNote}
-→ Start fault split at ${datasetAvgFaultA}% Car A / ${100 - datasetAvgFaultA}% Car B
-→ Adjust ±20% ONLY if video clearly shows otherwise. MUST sum to 100%.
+→ Start fault at ${datasetAvgFaultA}% Car A / ${100 - datasetAvgFaultA}% Car B
+→ Adjust ±20% only if video clearly shows otherwise. Must sum to 100%.
 
-RULES (Quote 1-2 relevant):
+RULES (Quote 1–2 most relevant):
 1. iRacing 8.1.1.8: "A driver may not gain an advantage by leaving the racing surface or racing below the white line."
 2. SCCA Appendix P: "Overtaker must be alongside at apex. One safe move only."
 3. BMW SIM GT: "Predictable lines. Yield on rejoins."
@@ -107,29 +104,31 @@ RULES (Quote 1-2 relevant):
 
 ANALYSIS:
 1. Quote rule(s).
-2. Fault % (sum 100%, dataset-based).
+2. Fault % (sum 100%, dataset-guided).
 3. Car A = overtaker/inside, Car B = defender/outside.
-4. Explain in 2-3 sentences USING SLANG naturally.
-5. ONE overtaking tip for A (slangy/actionable).
-6. ONE defense tip for B (slangy/actionable).
-7. Spotter calls.
+4. Explain in 2–3 short sentences — use 1–2 approved slang terms naturally.
+5. One clear overtaking tip for Car A.
+6. One clear defense tip for Car B.
+7. Spotter callouts.
 
-${slangExamples}
+${approvedSlang}
 
-CHECK:
-- Overlap at apex? Defender weave? Track cut for time? Safe rejoin?
+CHECK IF RELEVANT:
+- Was there overlap at apex?
+- Did anyone cut the corner and gain time?
+- Was the rejoin safe and predictable?
 
-OUTPUT ONLY JSON:
+OUTPUT ONLY VALID JSON:
 {
   "rule": "iRacing 8.1.1.8",
-  "fault": { "Car A": "78%", "Car B": "22%" },
-  "car_identification": "Car A: Divebomber. Car B: Line holder.",
-  "explanation": "Car A dove in late, turned across B's nose like they weren't there - classic no-overlap meat at apex.\\n\\nTip A: Don't pull the pin without side-by-side.\\nTip B: Hold that line like a champ on spotter 'inside!'",
-  "overtake_tip": "Wait for real overlap, no off-throttle dives",
-  "defend_tip": "Straight-line it, don't squeeze the meat",
+  "fault": { "Car A": "82%", "Car B": "18%" },
+  "car_identification": "Car A: Overtaker. Car B: Defender.",
+  "explanation": "Car A turned in like you weren't even there, causing contact at the apex.\\n\\nTip A: Wait for overlap before committing.\\nTip B: Hold your line like a champ on 'car inside!'",
+  "overtake_tip": "Build overlap before turning in",
+  "defend_tip": "Stay predictable when spotter calls 'inside'",
   "spotter_advice": {
-    "overtaker": "Spotter: 'Clear inside or clear off!'",
-    "defender": "Spotter: 'Car inside - hold firm!'"
+    "overtaker": "Wait for 'clear inside' from spotter",
+    "defender": "Call 'car inside!' early and hold line"
   },
   "confidence": "${confidence}",
   "flags": ["divebomb", "no_overlap"]
@@ -145,9 +144,9 @@ OUTPUT ONLY JSON:
       body: JSON.stringify({
         model: 'grok-3',
         messages: [{ role: 'user', content: prompt }],
-        max_tokens: 800,
-        temperature: 0.4,  // Slightly higher for natural slang flow
-        top_p: 0.85
+        max_tokens: 750,
+        temperature: 0.35,
+        top_p: 0.8
       }),
       signal: controller.signal
     });
@@ -158,20 +157,20 @@ OUTPUT ONLY JSON:
     const data = await grok.json();
     const raw = data.choices?.[0]?.message?.content?.trim() || '';
 
-    // 5. Parse with Fallbacks
+    // 5. Parse with Dataset Fallback
     let verdict = {
-      rule: `${incidentType.charAt(0).toUpperCase() + incidentType.slice(1)} violation`,
+      rule: `${incidentType.charAt(0).toUpperCase() + incidentType.slice(1)} incident`,
       fault: { 
         "Car A": `${datasetAvgFaultA}%`, 
         "Car B": `${100 - datasetAvgFaultA}%` 
       },
       car_identification: "Car A: Overtaker. Car B: Defender.",
-      explanation: `Analyzed via dataset - ${incidentType} style contact.\\n\\nTip A: Build real overlap.\\nTip B: Don't move under braking.`,
-      overtake_tip: "Earn the apex with overlap",
-      defend_tip: "Predictable line, no gifts",
+      explanation: `Contact occurred due to late move.\\n\\nTip A: Brake earlier for safer entry.\\nTip B: Hold racing line firmly.`,
+      overtake_tip: "Wait for overlap at apex",
+      defend_tip: "Stay predictable on defense",
       spotter_advice: {
-        overtaker: "Spotter: 'He's holding middle!'",
-        defender: "Spotter: 'Inside threat!'"
+        overtaker: "Listen for 'clear inside'",
+        defender: "Call 'car inside!' early"
       },
       confidence,
       flags: [incidentType.replace(/ /g, '_')]
@@ -180,7 +179,6 @@ OUTPUT ONLY JSON:
     try {
       const parsed = JSON.parse(raw);
 
-      // Fault sum validation
       const a = parseInt((parsed.fault?.["Car A"] || '').replace('%', ''));
       const b = parseInt((parsed.fault?.["Car B"] || '').replace('%', ''));
       const sumValid = !isNaN(a) && !isNaN(b) && a + b === 100;
@@ -197,7 +195,7 @@ OUTPUT ONLY JSON:
         flags: Array.isArray(parsed.flags) ? parsed.flags : verdict.flags
       };
     } catch (e) {
-      console.log('JSON parse failed, dataset fallback:', e);
+      console.log('JSON parse failed, using dataset prior:', e);
     }
 
     return Response.json({ verdict, matches });
