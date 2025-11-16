@@ -1,8 +1,6 @@
 // api/analyze-intranet.js
 import { z } from 'zod';
 import Papa from 'papaparse';
-import fs from 'fs';
-import path from 'path';
 
 const schema = z.object({ url: z.string().url() });
 
@@ -13,9 +11,7 @@ export async function POST(req) {
   try {
     const { url } = schema.parse(await req.json());
 
-    // -------------------------------------------------
     // 1. Extract YouTube ID + Title
-    // -------------------------------------------------
     const videoId = url.match(/(?:v=|\/embed\/|\/watch\?v=|\/shorts\/)([0-9A-Za-z_-]{11})/)?.[1];
     if (!videoId) throw new Error('Invalid YouTube URL');
 
@@ -49,15 +45,16 @@ export async function POST(req) {
 
     console.log('DEBUG: Title:', title, '| Type:', incidentType, '| NASCAR:', isNASCAR);
 
-    // -------------------------------------------------
-    // 2. Load Dataset
-    // -------------------------------------------------
+    // 2. Load CSV – VERCEL-SAFE
     let matches = [];
     let datasetAvgFaultA = isNASCAR ? 65 : 81;
 
     try {
-      const csvPath = path.join(process.cwd(), 'public', 'simracingstewards_28k.csv');
-      const text = fs.readFileSync(csvPath, 'utf8');
+      const csvUrl = new URL('../public/simracingstewards_28k.csv', import.meta.url);
+      const response = await fetch(csvUrl);
+      if (!response.ok) throw new Error('CSV fetch failed');
+      const text = await response.text();
+
       const parsed = Papa.parse(text, { header: true }).data;
       const query = lower;
 
@@ -79,16 +76,14 @@ export async function POST(req) {
         ? Math.round(validFaults.reduce((a, b) => a + b, 0) / validFaults.length)
         : datasetAvgFaultA;
 
-      console.log('DEBUG: Matches:', matches.length, 'Fault A:', datasetAvgFaultA);
+      console.log('DEBUG: CSV loaded – matches:', matches.length, 'Fault A:', datasetAvgFaultA);
     } catch (e) {
       console.log('CSV load failed:', e);
     }
 
     const confidence = matches.length >= 3 ? 'High' : matches.length >= 1 ? 'Medium' : 'Low';
 
-    // -------------------------------------------------
     // 3. Rules
-    // -------------------------------------------------
     const rulesSection = isNASCAR
       ? `NASCAR RULES:
 1. NASCAR 10.8.3: Stay above yellow line.
@@ -97,15 +92,13 @@ export async function POST(req) {
 1. iRacing 8.1.1.8: No advantage off track.
 2. SCCA: Overtaker must be alongside at apex.`;
 
-    // -------------------------------------------------
-    // 4. PROMPT – NO EXAMPLE JSON, FULL ANALYSIS
-    // -------------------------------------------------
-    const prompt = `You are a professional sim racing steward. Analyze the incident in this YouTube video:
+    // 4. Prompt – NO EXAMPLE, FULL ANALYSIS
+    const prompt = `You are a professional sim racing steward. Analyze this incident:
 
-VIDEO TITLE: "${title}"
-INCIDENT TYPE: ${incidentType}
+TITLE: "${title}"
+TYPE: ${incidentType}
 NASCAR: ${isNASCAR ? 'YES' : 'NO'}
-DATASET BASELINE: ${datasetAvgFaultA}% fault on overtaking car (Car A)
+BASE FAULT: ${datasetAvgFaultA}% on Car A (overtaker)
 
 RULES:
 ${rulesSection}
@@ -121,24 +114,20 @@ Use these phrases naturally:
 - you didn't have space to make that move
 - turn off the racing line
 
-DO NOT say "like a champ", "pull the pin", or repeat the same phrase every time.
-
-OUTPUT ONLY VALID JSON:
+OUTPUT ONLY JSON:
 {
   "rule": "quote one rule",
   "fault": { "Car A": "XX%", "Car B": "XX%" },
   "car_identification": "Car A: Overtaker. Car B: Defender.",
-  "explanation": "3-4 sentences describing what happened, why, and a teaching point.",
-  "overtake_tip": "One tip for Car A.",
-  "defend_tip": "One tip for Car B.",
+  "explanation": "3-4 sentences: what happened, why, teaching point.",
+  "overtake_tip": "Tip for Car A.",
+  "defend_tip": "Tip for Car B.",
   "spotter_advice": { "overtaker": "...", "defender": "..." },
   "confidence": "${confidence}",
-  "flags": ["divebomb", "contact"]
+  "flags": ["${incidentType.split(' ')[0].toLowerCase()}"]
 }`;
 
-    // -------------------------------------------------
     // 5. Call Grok
-    // -------------------------------------------------
     const grok = await fetch('https://api.x.ai/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -149,7 +138,7 @@ OUTPUT ONLY VALID JSON:
         model: 'grok-3',
         messages: [{ role: 'user', content: prompt }],
         max_tokens: 600,
-        temperature: 0.7,   // Higher = more creative, unique
+        temperature: 0.7,
         top_p: 0.9
       }),
       signal: controller.signal
@@ -161,19 +150,17 @@ OUTPUT ONLY VALID JSON:
     const data = await grok.json();
     const raw = data.choices?.[0]?.message?.content?.trim() || '';
 
-    // -------------------------------------------------
-    // 6. Parse with Fallback
-    // -------------------------------------------------
+    // 6. Parse
     let verdict = {
       rule: isNASCAR ? 'NASCAR Inside Line Priority' : 'iRacing 8.1.1.8',
       fault: { 'Car A': `${datasetAvgFaultA}%`, 'Car B': `${100 - datasetAvgFaultA}%` },
       car_identification: 'Car A: Overtaker. Car B: Defender.',
-      explanation: `Car A attempted a late move. Contact occurred. Overtake safely.`,
-      overtake_tip: 'Build overlap first.',
-      defend_tip: 'Hold your line.',
+      explanation: 'Contact occurred. Overtake safely.',
+      overtake_tip: 'Build overlap.',
+      defend_tip: 'Hold line.',
       spotter_advice: { overtaker: 'Wait for clear.', defender: 'Call inside!' },
       confidence,
-      flags: [incidentType.replace(/ /g, '_').toLowerCase()]
+      flags: [incidentType.split(' ')[0].toLowerCase()]
     };
 
     try {
@@ -181,7 +168,7 @@ OUTPUT ONLY VALID JSON:
       verdict = { ...verdict, ...parsed };
       verdict.fault = parsed.fault || verdict.fault;
     } catch (e) {
-      console.log('JSON parse failed:', e);
+      console.log('Parse failed:', e);
     }
 
     return Response.json({ verdict, matches, isNASCAR });
