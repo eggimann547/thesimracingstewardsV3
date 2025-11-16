@@ -15,6 +15,7 @@ export async function POST(req) {
     const videoId = url.match(/v=([0-9A-Za-z_-]{11})/)?.[1] || '';
     let title = 'unknown incident';
     let incidentType = 'general contact';
+    let isNASCAR = false;
 
     if (videoId) {
       try {
@@ -24,6 +25,10 @@ export async function POST(req) {
           title = data.title || 'unknown';
         }
         const lower = title.toLowerCase();
+        if (lower.includes('nascar')) {
+          isNASCAR = true;
+          incidentType = `${incidentType} (NASCAR)`;
+        }
         if (lower.includes('dive') || lower.includes('brake')) incidentType = 'divebomb';
         else if (lower.includes('vortex') || lower.includes('exit')) incidentType = 'vortex exit';
         else if (lower.includes('weave') || lower.includes('block')) incidentType = 'weave block';
@@ -48,7 +53,7 @@ export async function POST(req) {
           if (!row.title || !row.reason) continue;
           const rowText = `${row.title} ${row.reason}`.toLowerCase();
           let score = query.split(' ').filter(w => rowText.includes(w)).length;
-          if (rowText.includes(incidentType)) score += 2;
+          if (rowText.includes(incidentType.replace(' (NASCAR)', ''))) score += 2;
           if (score > 0) matches.push({ ...row, score });
         }
 
@@ -60,7 +65,7 @@ export async function POST(req) {
           .filter(f => !isNaN(f) && f >= 0);
         datasetAvgFaultA = validFaults.length > 0
           ? Math.round(validFaults.reduce((a, b) => a + b, 0) / validFaults.length)
-          : 81;
+          : isNASCAR ? 65 : 81;  // NASCAR default: more shared fault
       }
     } catch (e) {
       console.log('CSV load failed:', e);
@@ -72,7 +77,19 @@ export async function POST(req) {
 
     const confidence = matches.length >= 3 ? 'High' : matches.length >= 1 ? 'Medium' : 'Low';
 
-    // 3. PROMPT – CLEAN, DATA-FIRST, STRICT
+    // 3. NASCAR-SPECIFIC RULES + PRIOR
+    const generalRules = `
+1. iRacing 8.1.1.8: "A driver may not gain an advantage by leaving the racing surface or racing below the white line."
+2. SCCA Appendix P: "Overtaker must be alongside at apex. One safe move only."
+3. BMW SIM GT: "Predictable lines. Yield on rejoins."
+4. F1 Art. 27.5: "More than 50% overlap required to claim space. Avoid contact."`;
+
+    const nascarRules = `
+1. NASCAR 10.8.3 (Yellow Line): "Vehicles must race above the double yellow lines. Below to gain position = black flag."
+2. NASCAR Inside Line Priority: "Car establishing inside/bottom groove has right to corner."`;
+
+    const rulesSection = isNASCAR ? nascarRules : generalRules;
+
     const prompt = `You are a neutral, data-driven sim racing steward.
 
 ### DATASET PRIOR (MUST USE AS BASELINE)
@@ -80,6 +97,7 @@ ${datasetNote}
 **FAULT BASELINE: ${datasetAvgFaultA}% Car A / ${100 - datasetAvgFaultA}% Car B**
 → Adjust ±20% max only if video clearly contradicts.
 → Must sum to 100%.
+${isNASCAR ? 'NASCAR: Minor pack contact often shared fault ("rubbing is racing").' : ''}
 
 INCIDENT:
 - Video: ${url}
@@ -87,15 +105,12 @@ INCIDENT:
 - Type: ${incidentType}
 
 RULES (Quote 1–2 most relevant):
-1. iRacing 8.1.1.8: "A driver may not gain an advantage by leaving the racing surface or racing below the white line."
-2. SCCA Appendix P: "Overtaker must be alongside at apex. One safe move only."
-3. BMW SIM GT: "Predictable lines. Yield on rejoins."
-4. F1 Art. 27.5: "More than 50% overlap required to claim space. Avoid contact."
+${rulesSection}
 
 OUTPUT ONLY VALID JSON (NO EXTRA TEXT):
 {
-  "rule": "iRacing 8.1.1.8",
-  "fault": { "Car A": "78%", "Car B": "22%" },
+  "rule": "NASCAR 10.8.3",
+  "fault": { "Car A": "65%", "Car B": "35%" },
   "car_identification": "Car A: Overtaker. Car B: Defender.",
   "explanation": "Brief 2–3 sentence summary.",
   "overtake_tip": "One clear tip for Car A.",
@@ -119,7 +134,7 @@ OUTPUT ONLY VALID JSON (NO EXTRA TEXT):
         model: 'grok-3',
         messages: [{ role: 'user', content: prompt }],
         max_tokens: 600,
-        temperature: 0.2,   // Critical: low for strict adherence
+        temperature: 0.2,
         top_p: 0.7
       }),
       signal: controller.signal
@@ -133,7 +148,7 @@ OUTPUT ONLY VALID JSON (NO EXTRA TEXT):
 
     // 5. Parse with Dataset Fallback
     let verdict = {
-      rule: `${incidentType.charAt(0).toUpperCase() + incidentType.slice(1)} incident`,
+      rule: `${incidentType} incident`,
       fault: { 
         "Car A": `${datasetAvgFaultA}%`, 
         "Car B": `${100 - datasetAvgFaultA}%` 
@@ -147,7 +162,7 @@ OUTPUT ONLY VALID JSON (NO EXTRA TEXT):
         defender: "Call 'car inside!' early"
       },
       confidence,
-      flags: [incidentType.replace(/ /g, '_')]
+      flags: [incidentType.replace(/ /g, '_').replace('_(nascar)', '_nascar')]
     };
 
     try {
@@ -172,7 +187,7 @@ OUTPUT ONLY VALID JSON (NO EXTRA TEXT):
       console.log('JSON parse failed, using dataset prior:', e);
     }
 
-    // === POST-PROCESS: Add 1–2 community phrases (friendly, neutral)
+    // Post-process: Friendly slang (1 phrase max)
     const phrases = [
       "turned in like you weren't even there",
       "used you as a guardrail",
@@ -180,12 +195,12 @@ OUTPUT ONLY VALID JSON (NO EXTRA TEXT):
       "locked up and collected",
       "held your line like a champ"
     ];
-    const randomPhrase = phrases[Math.floor(Math.random() * phrases.length)];
-    if (verdict.explanation.includes('contact') && Math.random() > 0.5) {
-      verdict.explanation = verdict.explanation.replace('contact', `${randomPhrase}, causing contact`);
+    if (Math.random() > 0.5 && verdict.explanation.includes('contact')) {
+      const phrase = phrases[Math.floor(Math.random() * phrases.length)];
+      verdict.explanation = verdict.explanation.replace('contact', `${phrase}, contact`);
     }
 
-    return Response.json({ verdict, matches });
+    return Response.json({ verdict, matches, isNASCAR });
 
   } catch (err) {
     clearTimeout(timeout);
@@ -201,7 +216,8 @@ OUTPUT ONLY VALID JSON (NO EXTRA TEXT):
         confidence: "N/A",
         flags: []
       },
-      matches: []
+      matches: [],
+      isNASCAR: false
     }, { status: 500 });
   }
 }
