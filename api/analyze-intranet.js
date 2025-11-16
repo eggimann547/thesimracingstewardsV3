@@ -11,9 +11,7 @@ export async function POST(req) {
   try {
     const { url } = schema.parse(await req.json());
 
-    // -------------------------------------------------
-    // 1. YouTube title + incident type
-    // -------------------------------------------------
+    // 1. YouTube title
     const videoId = url.match(/v=([0-9A-Za-z_-]{11})/)?.[1] || '';
     let title = 'unknown incident';
     let incidentType = 'general contact';
@@ -31,14 +29,10 @@ export async function POST(req) {
         else if (lower.includes('weave') || lower.includes('block')) incidentType = 'weave block';
         else if (lower.includes('rejoin') || lower.includes('spin')) incidentType = 'unsafe rejoin';
         else if (lower.includes('apex') || lower.includes('cut')) incidentType = 'track limits';
-      } catch (e) {
-        console.log('oEmbed failed:', e);
-      }
+      } catch {}
     }
 
-    // -------------------------------------------------
     // 2. Dataset – DYNAMIC FAULT %
-    // -------------------------------------------------
     let matches = [];
     let avgFaultA = 81;
 
@@ -77,27 +71,7 @@ export async function POST(req) {
 
     const confidence = matches.length >= 3 ? 'High' : matches.length >= 1 ? 'Medium' : 'Low';
 
-    // -------------------------------------------------
-    // 3. Approved Phrases
-    // -------------------------------------------------
-    const phrases = [
-      "Vortex of Danger",
-      "Dive bomb",
-      "left the door open",
-      "he was never going to make that pass",
-      "you aren't required to leave the door open",
-      "a lunge at the last second does not mean you have to give him space",
-      "its the responsibility of the overtaking car to do so safely",
-      "you didn't have space to make that move",
-      "turn off the racing line"
-    ];
-
-    const shuffled = [...phrases].sort(() => Math.random() - 0.5);
-    const selectedPhrases = shuffled.slice(0, Math.floor(Math.random() * 2) + 1);
-
-    // -------------------------------------------------
-    // 4. Prompt – NOW WITH SCCA APPENDIX P
-    // -------------------------------------------------
+    // 3. Prompt – WITH SCCA APPENDIX P + NEW PHRASES
     const prompt = `You are a neutral, educational sim racing steward for r/simracingstewards.
 
 Video: ${url}
@@ -106,35 +80,47 @@ Type: ${incidentType}
 ${datasetNote}
 Confidence: ${confidence}
 
-RULES (quote 1–2, prioritize SCCA Appendix P when relevant):
+RULES (rotate 1–2, prioritize SCCA Appendix P for passing/Vortex cases):
 - iRacing 8.1.1.8: "A driver may not gain an advantage by leaving the racing surface or racing below the white line"
 - SCCA Appendix P (Racing Room & Passing): "The overtaking car must have a reasonable chance of completing the pass safely. Late moves into the 'Vortex of Danger' are not allowed."
 - BMW SIM GT: "Predictable lines. Yield on rejoins."
 - F1 Art. 27.5: "Avoid contact. Predominant fault."
 
-Use ONLY these phrases naturally (1–2 max):
-${selectedPhrases.map(p => `- "${p}"`).join('\n')}
+Use ONLY these phrases naturally (1–2 max, randomize for variety):
+- Vortex of Danger
+- Dive bomb
+- left the door open
+- he was never going to make that pass
+- you aren't required to leave the door open
+- a lunge at the last second does not mean you have to give him space
+- its the responsibility of the overtaking car to do so safely
+- you didn't have space to make that move
+- turn off the racing line
 
-Tone: calm, educational, community-focused. No blame.
+Tone: calm, educational, community-focused. No blame, no drama.
 
-OUTPUT ONLY VALID JSON:
+Even if one driver is at fault:
+1. Quote the rule.
+2. State fault %.
+3. Explain what happened (3–4 sentences, use phrases).
+4. Give **one actionable overtaking tip** for Car A.
+5. Give **one actionable defense tip** for Car B.
+6. **Always include spotter advice**:
+   - Overtaker: "Listen to spotter for defender's line before committing."
+   - Defender: "React to spotter's 'car inside!' call immediately."
+
+RETURN ONLY JSON:
 {
-  "rule": "Quote one rule (favor SCCA Appendix P for Vortex/divebomb)",
+  "rule": "Text",
   "fault": { "Car A": "${avgFaultA}%", "Car B": "${100 - avgFaultA}%" },
   "car_identification": "Car A: Overtaker. Car B: Defender.",
-  "explanation": "3–4 sentences: what happened, why, teaching point. Use selected phrase(s).",
-  "overtake_tip": "One actionable tip for Car A.",
-  "defend_tip": "One actionable tip for Car B.",
-  "spotter_advice": {
-    "overtaker": "Listen for 'clear inside' before turning in.",
-    "defender": "Call 'car inside!' early and hold line."
-  },
+  "explanation": "Summary paragraph\\n\\nTip A: ...\\nTip B: ...",
+  "overtake_tip": "Actionable tip for A",
+  "defend_tip": "Actionable tip for B",
   "confidence": "${confidence}"
 }`;
 
-    // -------------------------------------------------
-    // 5. Call Grok
-    // -------------------------------------------------
+    // 4. Grok
     const grok = await fetch('https://api.x.ai/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -145,7 +131,7 @@ OUTPUT ONLY VALID JSON:
         model: 'grok-3',
         messages: [{ role: 'user', content: prompt }],
         max_tokens: 700,
-        temperature: 0.7,
+        temperature: 0.7,  // Higher for variety
         top_p: 0.9
       }),
       signal: controller.signal
@@ -157,20 +143,14 @@ OUTPUT ONLY VALID JSON:
     const data = await grok.json();
     const raw = data.choices?.[0]?.message?.content?.trim() || '';
 
-    // -------------------------------------------------
-    // 6. Parse + Fallback
-    // -------------------------------------------------
+    // 5. Parse
     let verdict = {
-      rule: `iRacing 8.1.1.8`,
+      rule: `${incidentType} violation (iRacing 8.1.1.8)`,
       fault: { "Car A": `${avgFaultA}%`, "Car B": `${100 - avgFaultA}%` },
       car_identification: "Car A: Overtaker. Car B: Defender.",
-      explanation: `Car A entered the Vortex of Danger with a late Dive bomb. You didn't have space to make that move. Its the responsibility of the overtaking car to do so safely.\n\nTip A: Wait for overlap.\nTip B: Hold line on 'car inside!' call.`,
-      overtake_tip: "Build 50% overlap before turning in.",
-      defend_tip: "Stay predictable when spotter calls 'car inside!'.",
-      spotter_advice: {
-        overtaker: "Listen for 'clear inside' before committing.",
-        defender: "Call 'car inside!' early and hold line."
-      },
+      explanation: `Contact due to late move. Its the responsibility of the overtaking car to do so safely.\\n\\nTip A: Brake earlier.\\nTip B: Widen line.`,
+      overtake_tip: "Wait for overlap + listen to spotter",
+      defend_tip: "React to 'car inside!' call",
       confidence
     };
 
@@ -183,7 +163,6 @@ OUTPUT ONLY VALID JSON:
         explanation: parsed.explanation || verdict.explanation,
         overtake_tip: parsed.overtake_tip || verdict.overtake_tip,
         defend_tip: parsed.defend_tip || verdict.defend_tip,
-        spotter_advice: parsed.spotter_advice || verdict.spotter_advice,
         confidence: parsed.confidence || confidence
       };
     } catch (e) {
@@ -202,7 +181,6 @@ OUTPUT ONLY VALID JSON:
         explanation: err.message,
         overtake_tip: "",
         defend_tip: "",
-        spotter_advice: { overtaker: "", defender: "" },
         confidence: "N/A"
       },
       matches: []
