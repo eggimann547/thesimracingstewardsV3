@@ -1,6 +1,8 @@
 // api/analyze-intranet.js
 import { z } from 'zod';
 import Papa from 'papaparse';
+import fs from 'fs';
+import path from 'path';
 
 const schema = z.object({ url: z.string().url() });
 
@@ -45,15 +47,13 @@ export async function POST(req) {
 
     console.log('DEBUG: Title:', title, '| Type:', incidentType, '| NASCAR:', isNASCAR);
 
-    // 2. Load CSV – VERCEL-SAFE
+    // 2. Load CSV – VERCEL-SAFE (CJS)
     let matches = [];
     let datasetAvgFaultA = isNASCAR ? 65 : 81;
 
     try {
-      const csvUrl = new URL('../public/simracingstewards_28k.csv', import.meta.url);
-      const response = await fetch(csvUrl);
-      if (!response.ok) throw new Error('CSV fetch failed');
-      const text = await response.text();
+      const csvPath = path.join(__dirname, '..', 'public', 'simracingstewards_28k.csv');
+      const text = fs.readFileSync(csvPath, 'utf8');
 
       const parsed = Papa.parse(text, { header: true }).data;
       const query = lower;
