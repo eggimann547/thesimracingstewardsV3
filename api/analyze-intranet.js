@@ -1,7 +1,8 @@
 // api/analyze-intranet.js
 import { z } from 'zod';
 import Papa from 'papaparse';
-import fs from 'fs';               // <-- NEW: read CSV from filesystem
+import fs from 'fs';
+import path from 'path';
 
 const schema = z.object({ url: z.string().url() });
 
@@ -32,13 +33,11 @@ export async function POST(req) {
         }
         const lower = title.toLowerCase();
 
-        // ---- NASCAR HIGH-CONFIDENCE ----
         if (lower.includes('nascar')) {
           isNASCAR = true;
           console.log('DEBUG: NASCAR detected – Title:', title);
         }
 
-        // ---- General incident type ----
         if (lower.includes('dive') || lower.includes('brake')) incidentType = 'divebomb';
         else if (lower.includes('vortex') || lower.includes('exit')) incidentType = 'vortex exit';
         else if (lower.includes('weave') || lower.includes('block')) incidentType = 'weave block';
@@ -55,12 +54,13 @@ export async function POST(req) {
     }
 
     // -------------------------------------------------
-    // 2. Load CSV from filesystem (fs)
+    // 2. Load CSV from /public (Vercel-safe)
     // -------------------------------------------------
     let matches = [];
     let datasetAvgFaultA = 81;
     try {
-      const csvPath = './simracingstewards_28k.csv'; // <-- must be at project root
+      // Vercel bundles /public → accessible via process.cwd()
+      const csvPath = path.join(process.cwd(), 'public', 'simracingstewards_28k.csv');
       const text = fs.readFileSync(csvPath, 'utf8');
       const parsed = Papa.parse(text, { header: true }).data;
       const query = title.toLowerCase();
@@ -111,18 +111,18 @@ export async function POST(req) {
 2. SCCA Appendix P: "Overtaker must be alongside at apex. One safe move only."`;
 
     // -------------------------------------------------
-    // 4. Prompt – strict, data-first, no banned slang
+    // 4. Prompt – LONGER EXPLANATION + STRICT TONE
     // -------------------------------------------------
-    const prompt = `You are a friendly, neutral sim racing steward. Use ONLY the approved racing phrases:
+    const prompt = `You are a friendly, neutral sim racing steward. Use ONLY these racing phrases:
 - "turned in like you weren’t even there"
 - "used you as a guardrail"
 - "held the line like a champ"
 - "divebombed the chicane"
 - "locked up and collected"
 
-**DO NOT USE** any of these: "pulled the pin", "yeetin’", "ain’t", "mate", "no BS", "sloppy meat".
+**DO NOT USE**: "pulled the pin", "yeetin’", "ain’t", "mate", "no BS", "sloppy meat".
 
-**FAULT BASELINE (START HERE)**
+**FAULT BASELINE (MUST FOLLOW)**
 ${datasetNote}
 FAULT SPLIT: ${datasetAvgFaultA}% Car A / ${100 - datasetAvgFaultA}% Car B  
 (adjust ±20% max only if video clearly contradicts; must sum 100%).
@@ -132,20 +132,27 @@ INCIDENT:
 - Title: "${title}"
 - Type: ${incidentType}
 
-RULES (Quote 1-2 from the section below):
+RULES (Quote 1-2 from below):
 ${rulesSection}
 
-OUTPUT **ONLY** VALID JSON (no extra text):
+OUTPUT **ONLY** VALID JSON (no extra text). Explanation must be 3–4 sentences:
+1. What Car A did
+2. What Car B did
+3. Why contact occurred
+4. Key teaching point
+
 {
   "rule": "${isNASCAR ? "NASCAR Inside Line Priority" : "iRacing 8.1.1.8"}",
   "fault": { "Car A": "${datasetAvgFaultA}%", "Car B": "${100 - datasetAvgFaultA}%" },
   "car_identification": "Car A: Overtaker. Car B: Defender.",
-  "explanation": "${isNASCAR ? "Car A dove the bottom without clearing Car B, who held the groove." : "Car A turned in like you weren’t even there, causing contact."}",
-  "overtake_tip": "${isNASCAR ? "Wait for a clean low line before committing." : "Build overlap before turning in."}",
-  "defend_tip": "${isNASCAR ? "Protect the bottom groove on ‘car low!’." : "Hold your line like a champ."}",
+  "explanation": "${isNASCAR 
+    ? "Car A dove to the bottom groove late in the corner, attempting to pass underneath Car B. Car B was already committed to the low line and held their position. Because Car A did not establish a clean inside run, the cars made contact in the middle of the turn. In NASCAR, the driver who sets the bottom groove has priority—Car A should have waited for a safer opportunity."
+    : "Car A initiated a late braking move into the apex, turning in sharply without sufficient overlap. Car B was already on the racing line and maintained their path. The lack of overlap caused Car A’s front to clip Car B’s rear. Overtaking requires at least 50% overlap at turn-in to claim space safely."}",
+  "overtake_tip": "${isNASCAR ? "Wait for a clean low-line pass—lift early if overlap isn’t there." : "Brake earlier and build overlap before turning in."}",
+  "defend_tip": "${isNASCAR ? "Protect the bottom groove when spotter calls ‘car low!’." : "Hold your line firmly when under pressure."}",
   "spotter_advice": {
-    "overtaker": "${isNASCAR ? "Wait for ‘clear low’." : "Listen for ‘clear inside’."}",
-    "defender": "${isNASCAR ? "Call ‘car low!’ early." : "React to ‘car inside!’."}"
+    "overtaker": "${isNASCAR ? "Wait for ‘clear low’ before diving." : "Listen for ‘clear inside’ before committing."}",
+    "defender": "${isNASCAR ? "Call ‘car low!’ early and guard the groove." : "React to ‘car inside!’ and stay predictable."}"
   },
   "confidence": "${confidence}",
   "flags": ["${incidentType.replace(/ /g, '_').toLowerCase()}"]
@@ -163,8 +170,8 @@ OUTPUT **ONLY** VALID JSON (no extra text):
       body: JSON.stringify({
         model: 'grok-3',
         messages: [{ role: 'user', content: prompt }],
-        max_tokens: 600,
-        temperature: 0.15,   // ultra-low → strict adherence
+        max_tokens: 700,
+        temperature: 0.15,
         top_p: 0.7
       }),
       signal: controller.signal
@@ -177,17 +184,15 @@ OUTPUT **ONLY** VALID JSON (no extra text):
     const raw = data.choices?.[0]?.message?.content?.trim() || '';
 
     // -------------------------------------------------
-    // 6. Parse + NASCAR-aware fallback
+    // 6. Parse + Fallback
     // -------------------------------------------------
     let verdict = {
       rule: isNASCAR ? 'NASCAR Inside Line Priority' : 'iRacing 8.1.1.8',
       fault: { 'Car A': `${datasetAvgFaultA}%`, 'Car B': `${100 - datasetAvgFaultA}%` },
       car_identification: 'Car A: Overtaker. Car B: Defender.',
-      explanation: `${
-        isNASCAR
-          ? 'Contact on the oval due to failure to clear the low line.'
-          : 'Contact during a late overtake attempt.'
-      }\n\nTip A: Adjust entry.\nTip B: Maintain line.`,
+      explanation: isNASCAR
+        ? "Contact occurred on an oval due to a late inside move. Car A failed to clear the low line. Car B had priority. Wait for a clean pass."
+        : "Contact during a late overtake. Car A turned in without overlap. Car B held the line. Build overlap first.",
       overtake_tip: isNASCAR ? 'Secure low line early.' : 'Wait for overlap.',
       defend_tip: isNASCAR ? 'Guard the groove.' : 'Stay predictable.',
       spotter_advice: {
