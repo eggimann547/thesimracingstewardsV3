@@ -1,6 +1,8 @@
 // api/analyze-intranet.js
 import { z } from 'zod';
 import Papa from 'papaparse';
+import fs from 'fs';
+import path from 'path';
 
 const schema = z.object({ url: z.string().url() });
 
@@ -29,49 +31,66 @@ export async function POST(req) {
         else if (lower.includes('weave') || lower.includes('block')) incidentType = 'weave block';
         else if (lower.includes('rejoin') || lower.includes('spin')) incidentType = 'unsafe rejoin';
         else if (lower.includes('apex') || lower.includes('cut')) incidentType = 'track limits';
-      } catch {}
+      } catch (e) {
+        console.log('oEmbed failed:', e);
+      }
     }
 
-    // 2. Dataset – DYNAMIC FAULT %
+    // 2. Dataset – FIXED CSV LOAD + DYNAMIC FAULT %
     let matches = [];
     let avgFaultA = 81;
 
     try {
-      const res = await fetch('/simracingstewards_28k.csv', { signal: controller.signal });
-      if (res.ok) {
-        const text = await res.text();
-        const parsed = Papa.parse(text, { header: true }).data;
-        const query = title.toLowerCase();
+      // Vercel-safe CSV load (fs instead of fetch)
+      const csvPath = path.join(process.cwd(), 'public', 'simracingstewards_28k.csv');
+      const text = fs.readFileSync(csvPath, 'utf8');
+      const parsed = Papa.parse(text, { header: true }).data;
+      const query = title.toLowerCase();
 
-        for (const row of parsed) {
-          if (!row.title || !row.reason) continue;
-          const rowText = `${row.title} ${row.reason}`.toLowerCase();
-          let score = query.split(' ').filter(w => rowText.includes(w)).length;
-          if (rowText.includes(incidentType)) score += 2;
-          if (score > 0) matches.push({ ...row, score });
-        }
-
-        matches.sort((a, b) => b.score - a.score);
-        matches = matches.slice(0, 5);
-
-        const validFaults = matches
-          .map(m => parseFloat(m.fault_pct_driver_a || 0))
-          .filter(f => !isNaN(f) && f > 0);
-        avgFaultA = validFaults.length > 0
-          ? Math.round(validFaults.reduce((a, b) => a + b, 0) / validFaults.length)
-          : 81;
+      for (const row of parsed) {
+        if (!row.title || !row.reason) continue;
+        const rowText = `${row.title} ${row.reason}`.toLowerCase();
+        let score = query.split(' ').filter(w => rowText.includes(w)).length;
+        if (rowText.includes(incidentType)) score += 2;
+        if (score > 0) matches.push({ ...row, score });
       }
+
+      matches.sort((a, b) => b.score - a.score);
+      matches = matches.slice(0, 5);
+
+      const validFaults = matches
+        .map(m => parseFloat(m.fault_pct_driver_a || 0))
+        .filter(f => !isNaN(f) && f > 0);
+      avgFaultA = validFaults.length > 0
+        ? Math.round(validFaults.reduce((a, b) => a + b, 0) / validFaults.length)
+        : 81;
     } catch (e) {
       console.log('CSV failed:', e);
     }
 
     const datasetNote = matches.length
-      ? `Dataset: ${matches.length}/5 matches. Avg Car A fault: ${avgFaultA}%. Top: "${matches[0].title}" (${matches[0].ruling})`
-      : `Dataset: No matches. Using default for ${incidentType}: ${avgFaultA}% Car A fault`;
+      ? `Dataset: ${matches.length}/5 matches (Avg A fault: ${avgFaultA}%). Top: "${matches[0].title}" (${matches[0].ruling})`
+      : `Dataset: ${incidentType} incidents avg ${avgFaultA}% Car A fault`;
 
     const confidence = matches.length >= 3 ? 'High' : matches.length >= 1 ? 'Medium' : 'Low';
 
-    // 3. Prompt – WITH SCCA APPENDIX P + NEW PHRASES
+    // 3. Prompt – FIXED FOR UNIQUENESS + YOUR PHRASES
+    const phrases = [
+      "Vortex of Danger",
+      "Dive bomb",
+      "left the door open",
+      "he was never going to make that pass",
+      "you aren't required to leave the door open",
+      "a lunge at the last second does not mean you have to give him space",
+      "its the responsibility of the overtaking car to do so safely",
+      "you didn't have space to make that move",
+      "turn off the racing line"
+    ];
+
+    // Randomize 1–2 phrases
+    const shuffled = [...phrases].sort(() => Math.random() - 0.5);
+    const selectedPhrases = shuffled.slice(0, Math.floor(Math.random() * 2) + 1);
+
     const prompt = `You are a neutral, educational sim racing steward for r/simracingstewards.
 
 Video: ${url}
@@ -80,32 +99,23 @@ Type: ${incidentType}
 ${datasetNote}
 Confidence: ${confidence}
 
-RULES (rotate 1–2, prioritize SCCA Appendix P for passing/Vortex cases):
+RULES (rotate 1–2):
 - iRacing 8.1.1.8: "A driver may not gain an advantage by leaving the racing surface or racing below the white line"
-- SCCA Appendix P (Racing Room & Passing): "The overtaking car must have a reasonable chance of completing the pass safely. Late moves into the 'Vortex of Danger' are not allowed."
+- SCCA Appendix P: "The overtaking car must have a reasonable chance of completing the pass safely. Late moves into the 'Vortex of Danger' are not allowed."
 - BMW SIM GT: "Predictable lines. Yield on rejoins."
 - F1 Art. 27.5: "Avoid contact. Predominant fault."
 
-Use ONLY these phrases naturally (1–2 max, randomize for variety):
-- Vortex of Danger
-- Dive bomb
-- left the door open
-- he was never going to make that pass
-- you aren't required to leave the door open
-- a lunge at the last second does not mean you have to give him space
-- its the responsibility of the overtaking car to do so safely
-- you didn't have space to make that move
-- turn off the racing line
+Use ONLY these phrases naturally (1–2 max):
+${selectedPhrases.map(p => `- "${p}"`).join('\n')}
 
-Tone: calm, educational, community-focused. No blame, no drama.
+Tone: calm, educational, community-focused. No blame.
 
-Even if one driver is at fault:
 1. Quote the rule.
 2. State fault %.
-3. Explain what happened (3–4 sentences, use phrases).
-4. Give **one actionable overtaking tip** for Car A.
-5. Give **one actionable defense tip** for Car B.
-6. **Always include spotter advice**:
+3. Explain what happened (3–4 sentences, use title/type, 1–2 phrases).
+4. Give one actionable overtaking tip for Car A.
+5. Give one actionable defense tip for Car B.
+6. Always include spotter advice:
    - Overtaker: "Listen to spotter for defender's line before committing."
    - Defender: "React to spotter's 'car inside!' call immediately."
 
@@ -117,6 +127,10 @@ RETURN ONLY JSON:
   "explanation": "Summary paragraph\\n\\nTip A: ...\\nTip B: ...",
   "overtake_tip": "Actionable tip for A",
   "defend_tip": "Actionable tip for B",
+  "spotter_advice": {
+    "overtaker": "Listen to spotter for defender's line before committing.",
+    "defender": "React to spotter's 'car inside!' call immediately."
+  },
   "confidence": "${confidence}"
 }`;
 
@@ -131,7 +145,7 @@ RETURN ONLY JSON:
         model: 'grok-3',
         messages: [{ role: 'user', content: prompt }],
         max_tokens: 700,
-        temperature: 0.7,  // Higher for variety
+        temperature: 0.7,  // Varied outputs
         top_p: 0.9
       }),
       signal: controller.signal
@@ -151,6 +165,10 @@ RETURN ONLY JSON:
       explanation: `Contact due to late move. Its the responsibility of the overtaking car to do so safely.\\n\\nTip A: Brake earlier.\\nTip B: Widen line.`,
       overtake_tip: "Wait for overlap + listen to spotter",
       defend_tip: "React to 'car inside!' call",
+      spotter_advice: {
+        overtaker: "Listen to spotter for defender's line before committing.",
+        defender: "React to spotter's 'car inside!' call immediately."
+      },
       confidence
     };
 
@@ -163,6 +181,7 @@ RETURN ONLY JSON:
         explanation: parsed.explanation || verdict.explanation,
         overtake_tip: parsed.overtake_tip || verdict.overtake_tip,
         defend_tip: parsed.defend_tip || verdict.defend_tip,
+        spotter_advice: parsed.spotter_advice || verdict.spotter_advice,
         confidence: parsed.confidence || confidence
       };
     } catch (e) {
@@ -181,6 +200,7 @@ RETURN ONLY JSON:
         explanation: err.message,
         overtake_tip: "",
         defend_tip: "",
+        spotter_advice: { overtaker: "", defender: "" },
         confidence: "N/A"
       },
       matches: []
