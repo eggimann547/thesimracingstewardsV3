@@ -1,6 +1,7 @@
 // api/analyze-intranet.js
 import { z } from 'zod';
 import Papa from 'papaparse';
+import fs from 'fs';               // <-- NEW: read CSV from filesystem
 
 const schema = z.object({ url: z.string().url() });
 
@@ -11,7 +12,9 @@ export async function POST(req) {
   try {
     const { url } = schema.parse(await req.json());
 
-    // 1. Extract YouTube Title & Detect NASCAR FIRST
+    // -------------------------------------------------
+    // 1. YouTube title + NASCAR detection
+    // -------------------------------------------------
     const videoId = url.match(/v=([0-9A-Za-z_-]{11})/)?.[1] || '';
     let title = 'unknown incident';
     let incidentType = 'general contact';
@@ -19,68 +22,76 @@ export async function POST(req) {
 
     if (videoId) {
       try {
-        const oembed = await fetch(`https://www.youtube.com/oembed?url=${url}&format=json`, { signal: controller.signal });
+        const oembed = await fetch(
+          `https://www.youtube.com/oembed?url=${url}&format=json`,
+          { signal: controller.signal }
+        );
         if (oembed.ok) {
           const data = await oembed.json();
           title = data.title || 'unknown';
         }
         const lower = title.toLowerCase();
 
-        // NASCAR Detection – HIGH CONFIDENCE
+        // ---- NASCAR HIGH-CONFIDENCE ----
         if (lower.includes('nascar')) {
           isNASCAR = true;
-          console.log('DEBUG: NASCAR detected - Title:', title);
+          console.log('DEBUG: NASCAR detected – Title:', title);
         }
 
-        // General incident type AFTER NASCAR
+        // ---- General incident type ----
         if (lower.includes('dive') || lower.includes('brake')) incidentType = 'divebomb';
         else if (lower.includes('vortex') || lower.includes('exit')) incidentType = 'vortex exit';
         else if (lower.includes('weave') || lower.includes('block')) incidentType = 'weave block';
         else if (lower.includes('rejoin') || lower.includes('spin')) incidentType = 'unsafe rejoin';
         else if (lower.includes('apex') || lower.includes('cut')) incidentType = 'track limits';
 
-        if (isNASCAR) {
+        if (isNASCAR && !incidentType.includes('NASCAR')) {
           incidentType = `${incidentType} (NASCAR)`;
         }
-        console.log('DEBUG: Final incidentType:', incidentType, 'isNASCAR:', isNASCAR);
+        console.log('DEBUG: incidentType:', incidentType, 'isNASCAR:', isNASCAR);
       } catch (e) {
         console.log('YouTube oembed failed:', e);
       }
     }
 
-    // 2. Dataset Search & Stats
+    // -------------------------------------------------
+    // 2. Load CSV from filesystem (fs)
+    // -------------------------------------------------
     let matches = [];
     let datasetAvgFaultA = 81;
     try {
-      const res = await fetch('/simracingstewards_28k.csv', { signal: controller.signal });
-      if (res.ok) {
-        const text = await res.text();
-        const parsed = Papa.parse(text, { header: true }).data;
-        const query = title.toLowerCase();
+      const csvPath = './simracingstewards_28k.csv'; // <-- must be at project root
+      const text = fs.readFileSync(csvPath, 'utf8');
+      const parsed = Papa.parse(text, { header: true }).data;
+      const query = title.toLowerCase();
 
-        for (const row of parsed) {
-          if (!row.title || !row.reason) continue;
-          const rowText = `${row.title} ${row.reason}`.toLowerCase();
-          let score = query.split(' ').filter(w => rowText.includes(w)).length;
-          if (rowText.includes(incidentType.replace(' (NASCAR)', ''))) score += 2;
-          if (score > 0) matches.push({ ...row, score });
-        }
-
-        matches.sort((a, b) => b.score - a.score);
-        matches = matches.slice(0, 5);
-
-        const validFaults = matches
-          .map(m => parseFloat(m.fault_pct_driver_a || 0))
-          .filter(f => !isNaN(f) && f >= 0);
-        datasetAvgFaultA = validFaults.length > 0
-          ? Math.round(validFaults.reduce((a, b) => a + b, 0) / validFaults.length)
-          : isNASCAR ? 65 : 81;
+      for (const row of parsed) {
+        if (!row.title || !row.reason) continue;
+        const rowText = `${row.title} ${row.reason}`.toLowerCase();
+        let score = query.split(' ').filter(w => rowText.includes(w)).length;
+        if (rowText.includes(incidentType.replace(' (NASCAR)', ''))) score += 2;
+        if (score > 0) matches.push({ ...row, score });
       }
+
+      matches.sort((a, b) => b.score - a.score);
+      matches = matches.slice(0, 5);
+
+      const validFaults = matches
+        .map(m => parseFloat(m.fault_pct_driver_a || 0))
+        .filter(f => !isNaN(f) && f >= 0);
+      datasetAvgFaultA = validFaults.length > 0
+        ? Math.round(validFaults.reduce((a, b) => a + b, 0) / validFaults.length)
+        : isNASCAR ? 65 : 81;
+
+      console.log(
+        'DEBUG: CSV loaded – matches:',
+        matches.length,
+        'avgFaultA:',
+        datasetAvgFaultA
+      );
     } catch (e) {
       console.log('CSV load failed:', e);
     }
-
-    console.log('DEBUG: datasetAvgFaultA:', datasetAvgFaultA, 'matches:', matches.length);
 
     const datasetNote = matches.length
       ? `Dataset: ${matches.length}/5 matches. Avg Car A fault: ${datasetAvgFaultA}%. Top: "${matches[0].title}" (${matches[0].ruling})`
@@ -88,47 +99,61 @@ export async function POST(req) {
 
     const confidence = matches.length >= 3 ? 'High' : matches.length >= 1 ? 'Medium' : 'Low';
 
-    // 3. Rules – NASCAR or General
+    // -------------------------------------------------
+    // 3. Rules (NASCAR vs General)
+    // -------------------------------------------------
     const rulesSection = isNASCAR
-      ? `NASCAR RULES (MANDATORY - QUOTE FROM THESE):
+      ? `NASCAR RULES (MANDATORY – QUOTE FROM THESE):
 1. NASCAR 10.8.3 (Yellow Line): "Vehicles must race above the double yellow lines. Below to gain position = black flag."
 2. NASCAR Inside Line Priority: "Car establishing inside/bottom groove has right to corner. Minor contact in packs often shared."`
-      : `GENERAL RULES (MANDATORY - QUOTE FROM THESE):
+      : `GENERAL RULES (MANDATORY – QUOTE FROM THESE):
 1. iRacing 8.1.1.8: "A driver may not gain an advantage by leaving the racing surface or racing below the white line."
 2. SCCA Appendix P: "Overtaker must be alongside at apex. One safe move only."`;
 
-    // 4. PROMPT – STRICT TONE, NO BANNED TERMS, DATA-FIRST
-    const prompt = `You are a friendly, neutral sim racing steward helping drivers improve. Use clean, authentic racing language like "turned in like you weren’t even there", "used you as a guardrail", "held the line like a champ", "divebombed the chicane", "locked up and collected". AVOID THESE TERMS: "pulled the pin", "yeetin’", "ain’t", "mate", "no BS", "sloppy meat". Keep explanations educational, 2-3 sentences. Vary phrasing based on type (e.g., "dove the bottom" for NASCAR).
+    // -------------------------------------------------
+    // 4. Prompt – strict, data-first, no banned slang
+    // -------------------------------------------------
+    const prompt = `You are a friendly, neutral sim racing steward. Use ONLY the approved racing phrases:
+- "turned in like you weren’t even there"
+- "used you as a guardrail"
+- "held the line like a champ"
+- "divebombed the chicane"
+- "locked up and collected"
 
-**CRITICAL: FAULT BASELINE - START HERE**
+**DO NOT USE** any of these: "pulled the pin", "yeetin’", "ain’t", "mate", "no BS", "sloppy meat".
+
+**FAULT BASELINE (START HERE)**
 ${datasetNote}
-FAULT SPLIT: ${datasetAvgFaultA}% Car A / ${100 - datasetAvgFaultA}% Car B (adjust ±20% max if video contradicts; must sum 100%).
+FAULT SPLIT: ${datasetAvgFaultA}% Car A / ${100 - datasetAvgFaultA}% Car B  
+(adjust ±20% max only if video clearly contradicts; must sum 100%).
 
 INCIDENT:
 - Video: ${url}
 - Title: "${title}"
 - Type: ${incidentType}
 
-RULES (Quote 1-2 from section below):
+RULES (Quote 1-2 from the section below):
 ${rulesSection}
 
-OUTPUT ONLY VALID JSON (no extra text):
+OUTPUT **ONLY** VALID JSON (no extra text):
 {
   "rule": "${isNASCAR ? "NASCAR Inside Line Priority" : "iRacing 8.1.1.8"}",
   "fault": { "Car A": "${datasetAvgFaultA}%", "Car B": "${100 - datasetAvgFaultA}%" },
   "car_identification": "Car A: Overtaker. Car B: Defender.",
   "explanation": "${isNASCAR ? "Car A dove the bottom without clearing Car B, who held the groove." : "Car A turned in like you weren’t even there, causing contact."}",
-  "overtake_tip": "${isNASCAR ? "Wait for clear low line before committing." : "Build overlap before apex."}",
-  "defend_tip": "${isNASCAR ? "Protect the bottom groove on 'car low!'." : "Hold your line like a champ."}",
+  "overtake_tip": "${isNASCAR ? "Wait for a clean low line before committing." : "Build overlap before turning in."}",
+  "defend_tip": "${isNASCAR ? "Protect the bottom groove on ‘car low!’." : "Hold your line like a champ."}",
   "spotter_advice": {
-    "overtaker": "${isNASCAR ? "Wait for 'clear low'." : "Listen for 'clear inside'."}",
-    "defender": "${isNASCAR ? "Call 'car low!' early." : "React to 'car inside!'."}"
+    "overtaker": "${isNASCAR ? "Wait for ‘clear low’." : "Listen for ‘clear inside’."}",
+    "defender": "${isNASCAR ? "Call ‘car low!’ early." : "React to ‘car inside!’."}"
   },
   "confidence": "${confidence}",
   "flags": ["${incidentType.replace(/ /g, '_').toLowerCase()}"]
 }`;
 
+    // -------------------------------------------------
     // 5. Call Grok
+    // -------------------------------------------------
     const grok = await fetch('https://api.x.ai/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -139,7 +164,7 @@ OUTPUT ONLY VALID JSON (no extra text):
         model: 'grok-3',
         messages: [{ role: 'user', content: prompt }],
         max_tokens: 600,
-        temperature: 0.15,  // Ultra-low for strict adherence
+        temperature: 0.15,   // ultra-low → strict adherence
         top_p: 0.7
       }),
       signal: controller.signal
@@ -151,26 +176,32 @@ OUTPUT ONLY VALID JSON (no extra text):
     const data = await grok.json();
     const raw = data.choices?.[0]?.message?.content?.trim() || '';
 
-    // 6. Parse with NASCAR-Aware Fallback
+    // -------------------------------------------------
+    // 6. Parse + NASCAR-aware fallback
+    // -------------------------------------------------
     let verdict = {
-      rule: isNASCAR ? "NASCAR Inside Line Priority" : "iRacing 8.1.1.8",
-      fault: { "Car A": `${datasetAvgFaultA}%`, "Car B": `${100 - datasetAvgFaultA}%` },
-      car_identification: "Car A: Overtaker. Car B: Defender.",
-      explanation: `${isNASCAR ? "Contact on the oval due to failure to clear the low line." : "Contact during late overtake attempt."}\n\nTip A: Adjust for position.\nTip B: Maintain line.`,
-      overtake_tip: isNASCAR ? "Secure low line early." : "Wait for overlap.",
-      defend_tip: isNASCAR ? "Guard the groove." : "Stay predictable.",
+      rule: isNASCAR ? 'NASCAR Inside Line Priority' : 'iRacing 8.1.1.8',
+      fault: { 'Car A': `${datasetAvgFaultA}%`, 'Car B': `${100 - datasetAvgFaultA}%` },
+      car_identification: 'Car A: Overtaker. Car B: Defender.',
+      explanation: `${
+        isNASCAR
+          ? 'Contact on the oval due to failure to clear the low line.'
+          : 'Contact during a late overtake attempt.'
+      }\n\nTip A: Adjust entry.\nTip B: Maintain line.`,
+      overtake_tip: isNASCAR ? 'Secure low line early.' : 'Wait for overlap.',
+      defend_tip: isNASCAR ? 'Guard the groove.' : 'Stay predictable.',
       spotter_advice: {
         overtaker: isNASCAR ? "Await 'clear low'." : "Listen for 'clear inside'.",
         defender: isNASCAR ? "Call 'car low!'." : "React to 'car inside!'."
       },
       confidence,
-      flags: isNASCAR ? ["oval_contact", "nascar"] : [incidentType.replace(/ /g, '_')]
+      flags: isNASCAR ? ['oval_contact', 'nascar'] : [incidentType.replace(/ /g, '_')]
     };
 
     try {
       const parsed = JSON.parse(raw);
-      const a = parseInt((parsed.fault?.["Car A"] || '').replace('%', ''));
-      const b = parseInt((parsed.fault?.["Car B"] || '').replace('%', ''));
+      const a = parseInt((parsed.fault?.['Car A'] || '').replace('%', ''));
+      const b = parseInt((parsed.fault?.['Car B'] || '').replace('%', ''));
       const sumValid = !isNaN(a) && !isNaN(b) && a + b === 100;
 
       verdict = {
@@ -188,26 +219,29 @@ OUTPUT ONLY VALID JSON (no extra text):
       console.log('JSON parse failed, using fallback:', e);
     }
 
-    console.log('DEBUG: Final verdict rule:', verdict.rule, 'Fault A:', verdict.fault["Car A"]);
+    console.log('DEBUG: Final rule:', verdict.rule, 'Fault A:', verdict.fault['Car A']);
 
     return Response.json({ verdict, matches, isNASCAR });
 
   } catch (err) {
     clearTimeout(timeout);
-    return Response.json({
-      verdict: {
-        rule: "Analysis Error",
-        fault: { "Car A": "0%", "Car B": "0%" },
-        car_identification: "",
-        explanation: `Error: ${err.message}`,
-        overtake_tip: "",
-        defend_tip: "",
-        spotter_advice: { overtaker: "", defender: "" },
-        confidence: "N/A",
-        flags: []
+    return Response.json(
+      {
+        verdict: {
+          rule: 'Analysis Error',
+          fault: { 'Car A': '0%', 'Car B': '0%' },
+          car_identification: '',
+          explanation: `Error: ${err.message}`,
+          overtake_tip: '',
+          defend_tip: '',
+          spotter_advice: { overtaker: '', defender: '' },
+          confidence: 'N/A',
+          flags: []
+        },
+        matches: [],
+        isNASCAR: false
       },
-      matches: [],
-      isNASCAR: false
-    }, { status: 500 });
+      { status: 500 }
+    );
   }
 }
