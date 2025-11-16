@@ -59,7 +59,6 @@ export async function POST(req) {
     let matches = [];
     let datasetAvgFaultA = 81;
     try {
-      // Vercel bundles /public → accessible via process.cwd()
       const csvPath = path.join(process.cwd(), 'public', 'simracingstewards_28k.csv');
       const text = fs.readFileSync(csvPath, 'utf8');
       const parsed = Papa.parse(text, { header: true }).data;
@@ -83,12 +82,7 @@ export async function POST(req) {
         ? Math.round(validFaults.reduce((a, b) => a + b, 0) / validFaults.length)
         : isNASCAR ? 65 : 81;
 
-      console.log(
-        'DEBUG: CSV loaded – matches:',
-        matches.length,
-        'avgFaultA:',
-        datasetAvgFaultA
-      );
+      console.log('DEBUG: CSV loaded – matches:', matches.length, 'avgFaultA:', datasetAvgFaultA);
     } catch (e) {
       console.log('CSV load failed:', e);
     }
@@ -111,16 +105,24 @@ export async function POST(req) {
 2. SCCA Appendix P: "Overtaker must be alongside at apex. One safe move only."`;
 
     // -------------------------------------------------
-    // 4. Prompt – LONGER EXPLANATION + STRICT TONE
+    // 4. Prompt – NEW PHRASES, NO "LIKE A CHAMP"
     // -------------------------------------------------
-    const prompt = `You are a friendly, neutral sim racing steward. Use ONLY these racing phrases:
+    const prompt = `You are a professional, neutral sim racing steward. Use ONLY these approved racing phrases:
+- "Vortex of Danger"
+- "Dive bomb"
+- "left the door open"
+- "he was never going to make that pass"
+- "you aren't required to leave the door open"
+- "a lunge at the last second does not mean you have to give him space"
+- "its the responsibility of the overtaking car to do so safely"
+- "you didn't have space to make that move"
+- "turn off the racing line"
 - "turned in like you weren’t even there"
 - "used you as a guardrail"
-- "held the line like a champ"
 - "divebombed the chicane"
 - "locked up and collected"
 
-**DO NOT USE**: "pulled the pin", "yeetin’", "ain’t", "mate", "no BS", "sloppy meat".
+**DO NOT USE**: "like a champ", "pulled the pin", "yeetin’", "ain’t", "mate", "no BS", "sloppy meat".
 
 **FAULT BASELINE (MUST FOLLOW)**
 ${datasetNote}
@@ -135,24 +137,24 @@ INCIDENT:
 RULES (Quote 1-2 from below):
 ${rulesSection}
 
-OUTPUT **ONLY** VALID JSON (no extra text). Explanation must be 3–4 sentences:
+OUTPUT **ONLY** VALID JSON. Explanation: 3–4 sentences:
 1. What Car A did
 2. What Car B did
 3. Why contact occurred
-4. Key teaching point
+4. Key teaching point (use one of the approved phrases)
 
 {
   "rule": "${isNASCAR ? "NASCAR Inside Line Priority" : "iRacing 8.1.1.8"}",
   "fault": { "Car A": "${datasetAvgFaultA}%", "Car B": "${100 - datasetAvgFaultA}%" },
   "car_identification": "Car A: Overtaker. Car B: Defender.",
   "explanation": "${isNASCAR 
-    ? "Car A dove to the bottom groove late in the corner, attempting to pass underneath Car B. Car B was already committed to the low line and held their position. Because Car A did not establish a clean inside run, the cars made contact in the middle of the turn. In NASCAR, the driver who sets the bottom groove has priority—Car A should have waited for a safer opportunity."
-    : "Car A initiated a late braking move into the apex, turning in sharply without sufficient overlap. Car B was already on the racing line and maintained their path. The lack of overlap caused Car A’s front to clip Car B’s rear. Overtaking requires at least 50% overlap at turn-in to claim space safely."}",
-  "overtake_tip": "${isNASCAR ? "Wait for a clean low-line pass—lift early if overlap isn’t there." : "Brake earlier and build overlap before turning in."}",
-  "defend_tip": "${isNASCAR ? "Protect the bottom groove when spotter calls ‘car low!’." : "Hold your line firmly when under pressure."}",
+    ? "Car A attempted a Dive bomb on the inside late in the corner. Car B was already established on the bottom groove. He was never going to make that pass without contact. Its the responsibility of the overtaking car to do so safely."
+    : "Car A executed a lunge at the last second into the apex. Car B left the door open slightly but you aren't required to leave the door open. You didn't have space to make that move, so contact was inevitable. A lunge at the last second does not mean you have to give him space."}",
+  "overtake_tip": "${isNASCAR ? "Wait for a clean low-line pass." : "Build overlap before turning in."}",
+  "defend_tip": "${isNASCAR ? "Protect the bottom groove on ‘car low!’." : "Hold your line firmly."}",
   "spotter_advice": {
-    "overtaker": "${isNASCAR ? "Wait for ‘clear low’ before diving." : "Listen for ‘clear inside’ before committing."}",
-    "defender": "${isNASCAR ? "Call ‘car low!’ early and guard the groove." : "React to ‘car inside!’ and stay predictable."}"
+    "overtaker": "${isNASCAR ? "Wait for ‘clear low’." : "Listen for ‘clear inside’."}",
+    "defender": "${isNASCAR ? "Call ‘car low!’ early." : "React to ‘car inside!’."}"
   },
   "confidence": "${confidence}",
   "flags": ["${incidentType.replace(/ /g, '_').toLowerCase()}"]
@@ -191,9 +193,9 @@ OUTPUT **ONLY** VALID JSON (no extra text). Explanation must be 3–4 sentences:
       fault: { 'Car A': `${datasetAvgFaultA}%`, 'Car B': `${100 - datasetAvgFaultA}%` },
       car_identification: 'Car A: Overtaker. Car B: Defender.',
       explanation: isNASCAR
-        ? "Contact occurred on an oval due to a late inside move. Car A failed to clear the low line. Car B had priority. Wait for a clean pass."
-        : "Contact during a late overtake. Car A turned in without overlap. Car B held the line. Build overlap first.",
-      overtake_tip: isNASCAR ? 'Secure low line early.' : 'Wait for overlap.',
+        ? "Car A tried a late inside move. Car B held the groove. Contact was unavoidable. Wait for a clean pass."
+        : "Car A lunged late. Car B held line. No space. Overtake safely.",
+      overtake_tip: isNASCAR ? 'Wait for clean low line.' : 'Build overlap first.',
       defend_tip: isNASCAR ? 'Guard the groove.' : 'Stay predictable.',
       spotter_advice: {
         overtaker: isNASCAR ? "Await 'clear low'." : "Listen for 'clear inside'.",
