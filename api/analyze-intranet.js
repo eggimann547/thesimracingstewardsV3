@@ -11,10 +11,13 @@ export async function POST(req) {
   try {
     const { url } = schema.parse(await req.json());
 
-    // 1. YouTube title
+    // -------------------------------------------------
+    // 1. YouTube title + incident type
+    // -------------------------------------------------
     const videoId = url.match(/v=([0-9A-Za-z_-]{11})/)?.[1] || '';
     let title = 'unknown incident';
     let incidentType = 'general contact';
+
     if (videoId) {
       try {
         const oembed = await fetch(`https://www.youtube.com/oembed?url=${url}&format=json`, { signal: controller.signal });
@@ -28,17 +31,24 @@ export async function POST(req) {
         else if (lower.includes('weave') || lower.includes('block')) incidentType = 'weave block';
         else if (lower.includes('rejoin') || lower.includes('spin')) incidentType = 'unsafe rejoin';
         else if (lower.includes('apex') || lower.includes('cut')) incidentType = 'track limits';
-      } catch {}
+      } catch (e) {
+        console.log('oEmbed failed:', e);
+      }
     }
 
-    // 2. Dataset
+    // -------------------------------------------------
+    // 2. Dataset – DYNAMIC FAULT %
+    // -------------------------------------------------
     let matches = [];
+    let avgFaultA = 81;
+
     try {
       const res = await fetch('/simracingstewards_28k.csv', { signal: controller.signal });
       if (res.ok) {
         const text = await res.text();
         const parsed = Papa.parse(text, { header: true }).data;
         const query = title.toLowerCase();
+
         for (const row of parsed) {
           if (!row.title || !row.reason) continue;
           const rowText = `${row.title} ${row.reason}`.toLowerCase();
@@ -46,61 +56,86 @@ export async function POST(req) {
           if (rowText.includes(incidentType)) score += 2;
           if (score > 0) matches.push({ ...row, score });
         }
+
         matches.sort((a, b) => b.score - a.score);
         matches = matches.slice(0, 5);
+
+        const validFaults = matches
+          .map(m => parseFloat(m.fault_pct_driver_a || 0))
+          .filter(f => !isNaN(f) && f > 0);
+        avgFaultA = validFaults.length > 0
+          ? Math.round(validFaults.reduce((a, b) => a + b, 0) / validFaults.length)
+          : 81;
       }
     } catch (e) {
       console.log('CSV failed:', e);
     }
 
     const datasetNote = matches.length
-      ? `Dataset: ${matches.length}/5 matches (Avg A fault: ${Math.round(
-          matches.reduce((s, m) => s + parseFloat(m.fault_pct_driver_a || 0), 0) / matches.length
-        )}%). Top: "${matches[0].title}" (${matches[0].ruling})`
-      : `Dataset: ${incidentType} incidents avg 81% Car A fault`;
+      ? `Dataset: ${matches.length}/5 matches. Avg Car A fault: ${avgFaultA}%. Top: "${matches[0].title}" (${matches[0].ruling})`
+      : `Dataset: No matches. Using default for ${incidentType}: ${avgFaultA}% Car A fault`;
 
     const confidence = matches.length >= 3 ? 'High' : matches.length >= 1 ? 'Medium' : 'Low';
 
-    // 3. Prompt – SPOTTER + TIPS
-    const prompt = `You are a sim racing steward. Analyze this incident.
+    // -------------------------------------------------
+    // 3. Approved Phrases (ONLY THESE)
+    // -------------------------------------------------
+    const phrases = [
+      "Vortex of Danger",
+      "Dive bomb",
+      "left the door open",
+      "he was never going to make that pass",
+      "you aren't required to leave the door open",
+      "a lunge at the last second does not mean you have to give him space",
+      "its the responsibility of the overtaking car to do so safely",
+      "you didn't have space to make that move",
+      "turn off the racing line"
+    ];
+
+    // Randomly pick 1–2 phrases
+    const shuffled = [...phrases].sort(() => Math.random() - 0.5);
+    const selectedPhrases = shuffled.slice(0, Math.floor(Math.random() * 2) + 1);
+
+    // -------------------------------------------------
+    // 4. Prompt – EDUCATIONAL + RANDOMIZED
+    // -------------------------------------------------
+    const prompt = `You are a neutral, educational sim racing steward for r/simracingstewards.
 
 Video: ${url}
 Title: "${title}"
 Type: ${incidentType}
-
 ${datasetNote}
 Confidence: ${confidence}
 
-RULE TEXTS (rotate 1-2):
+RULES (quote 1–2):
 - iRacing 8.1.1.8: "A driver may not gain an advantage by leaving the racing surface or racing below the white line"
 - SCCA Appendix P: "Overtaker must be alongside at apex. One safe move only."
 - BMW SIM GT: "Predictable lines. Yield on rejoins."
 - F1 Art. 27.5: "Avoid contact. Predominant fault."
 
-Even if one driver is at fault:
-1. Quote the rule.
-2. State fault %.
-3. Explain what happened.
-4. Give **one actionable overtaking tip** for Car A.
-5. Give **one actionable defense tip** for Car B.
-6. **Always include spotter advice**:
-   - Overtaker: "Listen to spotter for defender's line before committing."
-   - Defender: "React to spotter's 'car inside!' call immediately."
+Use ONLY these phrases naturally (1–2 max):
+${selectedPhrases.map(p => `- "${p}"`).join('\n')}
 
-Tone: neutral, educational.
+Tone: calm, helpful, learning-focused. No drama, no blame.
 
-RETURN ONLY JSON:
+OUTPUT ONLY VALID JSON:
 {
-  "rule": "Text",
-  "fault": { "Car A": "85%", "Car B": "15%" },
+  "rule": "Quote one rule",
+  "fault": { "Car A": "${avgFaultA}%", "Car B": "${100 - avgFaultA}%" },
   "car_identification": "Car A: Overtaker. Car B: Defender.",
-  "explanation": "Summary paragraph\\n\\nTip A: ...\\nTip B: ...",
-  "overtake_tip": "Wait for overlap + listen to spotter",
-  "defend_tip": "Widen line on 'car inside!' call",
-  "confidence": "High"
+  "explanation": "3–4 sentences: what happened, why, teaching point. Use 1–2 selected phrases.",
+  "overtake_tip": "One actionable tip for Car A.",
+  "defend_tip": "One actionable tip for Car B.",
+  "spotter_advice": {
+    "overtaker": "Listen for 'clear inside' before turning in.",
+    "defender": "Call 'car inside!' early and hold line."
+  },
+  "confidence": "${confidence}"
 }`;
 
-    // 4. Grok
+    // -------------------------------------------------
+    // 5. Call Grok
+    // -------------------------------------------------
     const grok = await fetch('https://api.x.ai/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -111,7 +146,8 @@ RETURN ONLY JSON:
         model: 'grok-3',
         messages: [{ role: 'user', content: prompt }],
         max_tokens: 700,
-        temperature: 0.4
+        temperature: 0.7,  // Higher = more varied
+        top_p: 0.9
       }),
       signal: controller.signal
     });
@@ -122,14 +158,20 @@ RETURN ONLY JSON:
     const data = await grok.json();
     const raw = data.choices?.[0]?.message?.content?.trim() || '';
 
-    // 5. Parse
+    // -------------------------------------------------
+    // 6. Parse + Fallback
+    // -------------------------------------------------
     let verdict = {
-      rule: `${incidentType} violation (iRacing 8.1.1.8)`,
-      fault: { "Car A": "81%", "Car B": "19%" },
+      rule: `iRacing 8.1.1.8`,
+      fault: { "Car A": `${avgFaultA}%`, "Car B": `${100 - avgFaultA}%` },
       car_identification: "Car A: Overtaker. Car B: Defender.",
-      explanation: `Contact due to late move.\\n\\nTip A: Brake earlier.\\nTip B: Widen line.`,
-      overtake_tip: "Wait for overlap + listen to spotter",
-      defend_tip: "React to 'car inside!' call",
+      explanation: `Car A attempted a late move into the apex. Contact occurred. Its the responsibility of the overtaking car to do so safely.\n\nTip A: Build overlap first.\nTip B: Hold line on 'car inside!' call.`,
+      overtake_tip: "Wait for 50% overlap before turning in.",
+      defend_tip: "Stay predictable when defender calls 'car inside!'.",
+      spotter_advice: {
+        overtaker: "Listen for 'clear inside' before committing.",
+        defender: "Call 'car inside!' early and hold line."
+      },
       confidence
     };
 
@@ -142,6 +184,7 @@ RETURN ONLY JSON:
         explanation: parsed.explanation || verdict.explanation,
         overtake_tip: parsed.overtake_tip || verdict.overtake_tip,
         defend_tip: parsed.defend_tip || verdict.defend_tip,
+        spotter_advice: parsed.spotter_advice || verdict.spotter_advice,
         confidence: parsed.confidence || confidence
       };
     } catch (e) {
@@ -149,6 +192,7 @@ RETURN ONLY JSON:
     }
 
     return Response.json({ verdict, matches });
+
   } catch (err) {
     clearTimeout(timeout);
     return Response.json({
@@ -159,6 +203,7 @@ RETURN ONLY JSON:
         explanation: err.message,
         overtake_tip: "",
         defend_tip: "",
+        spotter_advice: { overtaker: "", defender: "" },
         confidence: "N/A"
       },
       matches: []
