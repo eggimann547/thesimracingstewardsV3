@@ -7,102 +7,84 @@ import path from 'path';
 const schema = z.object({ url: z.string().url() });
 
 export async function POST(req) {
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 15000);
-
   try {
     const { url } = schema.parse(await req.json());
 
-    // ---------- 1. YouTube title ----------
+    // 1. Get YouTube title
     const videoId = url.match(/(?:v=|\/embed\/|\/watch\?v=|\/shorts\/)([0-9A-Za-z_-]{11})/)?.[1];
     if (!videoId) throw new Error('Invalid YouTube URL');
 
     let title = 'unknown incident';
-    let isNASCAR = false;
-    let incidentType = 'general contact';
-
     try {
-      const oembed = await fetch(`https://www.youtube.com/oembed?url=${url}&format=json`, {
-        signal: controller.signal,
-      });
-      if (oembed.ok) {
-        const data = await oembed.json();
-        title = data.title || 'unknown';
-      }
+      const res = await fetch(`https://www.youtube.com/oembed?url=${url}&format=json`);
+      if (res.ok) title = (await res.json()).title || title;
     } catch (e) {
       console.log('oEmbed failed:', e);
     }
 
     const lower = title.toLowerCase();
-    if (lower.includes('nascar')) {
-      isNASCAR = true;
-      incidentType = 'oval contact (NASCAR)';
-    } else if (lower.includes('formula') || lower.includes('vee')) {
-      incidentType = 'divebomb';
-    } else if (lower.includes('dive') || lower.includes('bomb')) {
-      incidentType = 'divebomb';
-    } else if (lower.includes('vortex')) {
-      incidentType = 'vortex exit';
-    }
+    const isNASCAR = lower.includes('nascar');
+    const incidentType = isNASCAR
+      ? 'oval contact (NASCAR)'
+      : lower.includes('dive') || lower.includes('bomb') ? 'divebomb'
+      : lower.includes('vortex') ? 'vortex exit'
+      : 'general contact';
 
-    console.log('DEBUG – Title:', title, '| Type:', incidentType, '| NASCAR:', isNASCAR);
+    console.log('DEBUG:', { title, isNASCAR, incidentType });
 
-    // ---------- 2. CSV (Vercel-safe) ----------
+    // 2. Load CSV (Vercel-safe)
     let matches = [];
-    let datasetAvgFaultA = isNASCAR ? 65 : 81;
+    let baseFaultA = isNASCAR ? 65 : 81;
 
     try {
       const csvPath = path.join(__dirname, '..', 'public', 'simracingstewards_28k.csv');
       const text = fs.readFileSync(csvPath, 'utf8');
-      const parsed = Papa.parse(text, { header: true }).data;
-      const query = lower;
+      const data = Papa.parse(text, { header: true }).data;
 
-      for (const row of parsed) {
+      for (const row of data) {
         if (!row.title || !row.reason) continue;
-        const rowText = `${row.title} ${row.reason}`.toLowerCase();
-        let score = query.split(' ').filter(w => rowText.includes(w)).length;
-        if (rowText.includes(incidentType.replace(' (NASCAR)', ''))) score += 3;
+        const txt = `${row.title} ${row.reason}`.toLowerCase();
+        let score = lower.split(' ').filter(w => txt.includes(w)).length;
+        if (txt.includes(incidentType.replace(' (NASCAR)', ''))) score += 3;
         if (score > 0) matches.push({ ...row, score });
       }
 
       matches.sort((a, b) => b.score - a.score);
       matches = matches.slice(0, 5);
 
-      const valid = matches
-        .map(m => parseFloat(m.fault_pct_driver_a || 0))
+      const faults = matches
+        .map(r => parseFloat(r.fault_pct_driver_a || 0))
         .filter(v => !isNaN(v));
-      datasetAvgFaultA = valid.length
-        ? Math.round(valid.reduce((a, b) => a + b, 0) / valid.length)
-        : datasetAvgFaultA;
-
-      console.log('DEBUG – CSV matches:', matches.length, 'Fault A:', datasetAvgFaultA);
+      baseFaultA = faults.length
+        ? Math.round(faults.reduce((a, b) => a + b, 0) / faults.length)
+        : baseFaultA;
     } catch (e) {
-      console.log('CSV load failed:', e);
+      console.log('CSV failed:', e);
     }
 
-    const confidence = matches.length >= 3 ? 'High' : matches.length >= 1 ? 'Medium' : 'Low';
+    const confidence = matches.length >= 3 ? 'High' : matches.length ? 'Medium' : 'Low';
 
-    // ---------- 3. Rules ----------
-    const rulesSection = isNASCAR
+    // 3. Rules
+    const rules = isNASCAR
       ? `NASCAR RULES:
-1. NASCAR 10.8.3: Stay above yellow line.
-2. Inside Line Priority: Car in bottom groove has right to corner.`
+1. 10.8.3: Stay above yellow line.
+2. Inside Line Priority: Car in bottom groove has corner right.`
       : `GENERAL RULES:
 1. iRacing 8.1.1.8: No advantage off track.
 2. SCCA: Overtaker must be alongside at apex.`;
 
-    // ---------- 4. Prompt (no example JSON) ----------
-    const prompt = `You are a professional sim-racing steward.
+    // 4. Prompt – clean, no example
+    const prompt = `You are a professional sim racing steward.
 
 TITLE: "${title}"
 TYPE: ${incidentType}
 NASCAR: ${isNASCAR ? 'YES' : 'NO'}
-BASE FAULT: ${datasetAvgFaultA}% on Car A (overtaker)
+BASE FAULT: ${baseFaultA}% on Car A
 
 RULES:
-${rulesSection}
+${rules}
 
-Use these phrases naturally (pick the ones that fit):
+Use these phrases naturally:
 - Dive bomb
 - Vortex of Danger
 - left the door open
@@ -113,9 +95,7 @@ Use these phrases naturally (pick the ones that fit):
 - you didn't have space to make that move
 - turn off the racing line
 
-DO NOT use: "like a champ", "pull the pin", "yeetin’", "ain’t"
-
-OUTPUT **ONLY** VALID JSON:
+OUTPUT ONLY VALID JSON:
 {
   "rule": "quote one rule",
   "fault": { "Car A": "XX%", "Car B": "XX%" },
@@ -128,7 +108,7 @@ OUTPUT **ONLY** VALID JSON:
   "flags": ["${incidentType.split(' ')[0].toLowerCase()}"]
 }`;
 
-    // ---------- 5. Call Grok ----------
+    // 5. Call Grok
     const grok = await fetch('https://api.x.ai/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -142,23 +122,20 @@ OUTPUT **ONLY** VALID JSON:
         temperature: 0.7,
         top_p: 0.9,
       }),
-      signal: controller.signal,
     });
 
-    clearTimeout(timeout);
     if (!grok.ok) throw new Error(`Grok ${grok.status}`);
 
-    const data = await grok.json();
-    const raw = data.choices?.[0]?.message?.content?.trim() || '';
+    const raw = (await grok.json()).choices?.[0]?.message?.content?.trim() || '';
 
-    // ---------- 6. Parse + Fallback ----------
+    // 6. Parse + fallback
     let verdict = {
       rule: isNASCAR ? 'NASCAR Inside Line Priority' : 'iRacing 8.1.1.8',
-      fault: { 'Car A': `${datasetAvgFaultA}%`, 'Car B': `${100 - datasetAvgFaultA}%` },
+      fault: { 'Car A': `${baseFaultA}%`, 'Car B': `${100 - baseFaultA}%` },
       car_identification: 'Car A: Overtaker. Car B: Defender.',
       explanation: 'Contact occurred. Overtake safely.',
-      overtake_tip: 'Build overlap first.',
-      defend_tip: 'Hold your line.',
+      overtake_tip: 'Build overlap.',
+      defend_tip: 'Hold line.',
       spotter_advice: { overtaker: 'Wait for clear.', defender: 'Call inside!' },
       confidence,
       flags: [incidentType.split(' ')[0].toLowerCase()],
@@ -169,13 +146,12 @@ OUTPUT **ONLY** VALID JSON:
       verdict = { ...verdict, ...parsed };
       verdict.fault = parsed.fault || verdict.fault;
     } catch (e) {
-      console.log('JSON parse failed:', e);
+      console.log('Parse failed:', e);
     }
 
     return Response.json({ verdict, matches, isNASCAR });
 
   } catch (err) {
-    clearTimeout(timeout);
     return Response.json(
       {
         verdict: {
