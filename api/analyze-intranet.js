@@ -1,5 +1,5 @@
 // api/analyze-intranet.js
-// FULLY RESTORED + CAR ROLES WITH VISUAL IDENTIFICATION (A/B/C) + 200+ TIPS
+// FULLY RESTORED: EXACT CAR A / CAR B IDENTIFICATION + FAULT + 200+ TIPS + STABLE
 import { z } from 'zod';
 import Papa from 'papaparse';
 import fs from 'fs';
@@ -157,53 +157,55 @@ export async function POST(req) {
       console.log('tips2.txt failed (non-critical):', e.message);
     }
 
-    // === 4. CAR ROLES WITH VISUAL ID (A/B/C) ===
-    let carIdentification = "Car A: Overtaker. Car B: Defender.";
-    let carVisual = "Car A: Overtaker (initiating pass)\nCar B: Defender (holding line)";
+    // === 4. CAR A / CAR B IDENTIFICATION — EXACTLY AS BEFORE (NO CREATIVITY) ===
+    let carA = "Overtaker";
+    let carB = "Defender";
 
     if (incidentType === 'weave block') {
-      carIdentification = "Car A: Defender. Car B: Overtaker.";
-      carVisual = "Car A: Defender (weaving to block)\nCar B: Overtaker (attempting pass)";
+      carA = "Defender";
+      carB = "Overtaker";
     } else if (incidentType === 'unsafe rejoin') {
-      carIdentification = "Car A: Rejoining car. Car B: On-track car.";
-      carVisual = "Car A: Rejoining car (off-track return)\nCar B: On-track car (established line)";
+      carA = "Rejoining car";
+      carB = "On-track car";
     } else if (incidentType === 'netcode') {
-      carIdentification = "Car A: Teleporting car. Car B: Affected car.";
-      carVisual = "Car A: Teleporting car (lag/desync)\nCar B: Affected car (hit by glitch)";
+      carA = "Teleporting car";
+      carB = "Affected car";
     } else if (incidentType === 'used as barrier') {
-      carIdentification = "Car A: Using car. Car B: Victim car.";
-      carVisual = "Car A: Using car (intentional contact)\nCar B: Victim car (used as wall)";
+      carA = "Using car";
+      carB = "Victim car";
     } else if (incidentType === 'pit maneuver') {
-      carIdentification = "Car A: Spinning car. Car B: Spun car.";
-      carVisual = "Car A: Spinning car (initiating spin)\nCar B: Spun car (victim of spin)";
+      carA = "Spinning car";
+      carB = "Spun car";
     } else if (incidentType === 'track limits') {
-      carIdentification = "Car A: Off-track car. Car B: On-track car.";
-      carVisual = "Car A: Off-track car (exceeded limits)\nCar B: On-track car (affected by cut)";
+      carA = "Off-track car";
+      carB = "On-track car";
     }
 
-    // === 5. PROMPT: FULL + VISUAL CAR ROLES ===
+    const carIdentification = `Car A: ${carA}. Car B: ${carB}.`;
+
+    // === 5. PROMPT: FULL + EXACT CAR A/B + FAULT ===
     const prompt = `You are a neutral, educational sim racing steward.
 Video: ${url}
 Title: ${titleForPrompt}
 Type: ${incidentType}
 Confidence: ${confidence}
 RULE: ${selectedRule}
-Car Roles (Visual ID):
-${carVisual}
+CAR A: ${carA}
+CAR B: ${carB}
+Fault: Car A ${finalFaultA}%, Car B ${100 - finalFaultA}%
 ${proTip ? `Include this tip: "${proTip}"` : ''}
 Tone: calm, educational. Teach, don’t blame.
 1. Quote the rule.
 2. State fault %.
-3. Explain in 3–4 sentences using Car A and Car B with their visual roles.
-4. Overtaking tip for the aggressor.
-5. Defense tip for the defender.
+3. Explain in 3–4 sentences using "Car A (${carA})" and "Car B (${carB})".
+4. Overtaking tip for Car A if overtaking.
+5. Defense tip for Car B if defending.
 6. Spotter advice.
 RETURN ONLY JSON:
 {
   "rule": "...",
   "fault": { "Car A": "${finalFaultA}%", "Car B": "${100 - finalFaultA}%" },
   "car_identification": "${carIdentification}",
-  "car_visual": "${carVisual}",
   "explanation": "...",
   "overtake_tip": "...",
   "defend_tip": "...",
@@ -238,13 +240,12 @@ RETURN ONLY JSON:
       rule: selectedRule,
       fault: { "Car A": `${finalFaultA}%`, "Car B": `${100 - finalFaultA}%` },
       car_identification: carIdentification,
-      car_visual: carVisual,
-      explanation: `Contact occurred. Both drivers can improve.\n\nTip A: Brake earlier.\nTip B: Hold line.`,
-      overtake_tip: "Establish overlap.",
-      defend_tip: "Stay predictable.",
+      explanation: `Contact occurred. Car A (${carA}) is at ${finalFaultA}% fault. Car B (${carB}) can improve.`,
+      overtake_tip: "Establish overlap before committing.",
+      defend_tip: "Hold your line firmly.",
       spotter_advice: {
-        overtaker: "Listen to spotter.",
-        defender: "React immediately."
+        overtaker: "Listen to spotter before diving.",
+        defender: "React to 'car inside!' call."
       },
       confidence
     };
@@ -267,8 +268,7 @@ RETURN ONLY JSON:
     return Response.json({
       verdict: {
         rule: "Error", fault: { "Car A": "0%", "Car B": "0%" },
-        car_identification: "Unknown",
-        car_visual: "Unable to identify roles.",
+        car_identification: "Unable to determine roles",
         explanation: err.message || "Server error",
         overtake_tip: "", defend_tip: "", spotter_advice: { overtaker: "", defender: "" },
         confidence: "N/A"
