@@ -11,14 +11,14 @@ export async function POST(req) {
     const { url } = schema.parse(await req.json());
     // === 1. YouTube Title & Incident Type ===
     const videoId = url.match(/v=([0-9A-Za-z_-]{11})/)?.[1] || '';
-    let title = 'incident'; // ← Changed from 'unknown incident'
+    let title = 'incident'; // ← No quotes
     let incidentType = 'general contact';
     if (videoId) {
       try {
         const oembed = await fetch(`https://www.youtube.com/oembed?url=${url}&format=json`, { signal: controller.signal });
         if (oembed.ok) {
           const data = await oembed.json();
-          title = data.title || 'incident'; // ← Fallback to 'incident'
+          title = data.title || 'incident'; // ← No quotes
         }
         const lower = title.toLowerCase();
         if (lower.includes('dive') || lower.includes('brake')) incidentType = 'divebomb';
@@ -26,6 +26,9 @@ export async function POST(req) {
         else if (lower.includes('weave') || lower.includes('block')) incidentType = 'weave block';
         else if (lower.includes('rejoin') || lower.includes('spin')) incidentType = 'unsafe rejoin';
         else if (lower.includes('apex') || lower.includes('cut')) incidentType = 'track limits';
+        else if (lower.includes('netcode') || lower.includes('lag') || lower.includes('teleport')) incidentType = 'netcode';
+        else if (lower.includes('barrier') || lower.includes('wall') || lower.includes('used you')) incidentType = 'used as barrier';
+        else if (lower.includes('pit') && lower.includes('maneuver')) incidentType = 'pit maneuver';
       } catch (e) {
         console.log('oEmbed failed:', e);
       }
@@ -33,7 +36,7 @@ export async function POST(req) {
     // === 2. ENHANCED FAULT ENGINE ===
     let matches = [];
     let finalFaultA = 60; // neutral start
-    // BMW make GT Rule Matching
+    // BMW SIM GT Rule Matching
     const BMW_RULES = [
       { keywords: ['dive', 'late', 'lunge', 'brake', 'underbraking', 'punting'], faultA: 90, desc: "Under-braking and punting (BMW SIM GT Rule 5)" },
       { keywords: ['block', 'weave', 'reactionary', 'move under braking'], faultA: 20, desc: "Blocking (BMW SIM GT Rule 2)" },
@@ -41,7 +44,10 @@ export async function POST(req) {
       { keywords: ['side-by-side', 'overlap', 'apex', 'cut', 'door open', 'left the door open', 'closed the door'], faultA: 95, desc: "Side-by-side rule violation (BMW SIM GT Rule 4)" },
       { keywords: ['blue flag', 'yield', 'lapped', 'faster car'], faultA: 70, desc: "Failure to yield blue flag (BMW SIM GT Rule 3)" },
       { keywords: ['vortex', 'exit', 'overtake', 'closing'], faultA: 88, desc: "Vortex of Danger (SCCA Appendix P)" },
-      { keywords: ['track limits', 'cut', 'white line', 'off-track'], faultA: 75, desc: "Track limits violation (iRacing 8.1.1.8)" }
+      { keywords: ['track limits', 'cut', 'white line', 'off-track'], faultA: 75, desc: "Track limits violation (iRacing 8.1.1.8)" },
+      { keywords: ['netcode', 'lag', 'teleport', 'desync'], faultA: 50, desc: "Netcode-related incident (No fault assignable)" },
+      { keywords: ['barrier', 'wall', 'used you', 'used as barrier'], faultA: 95, desc: "Using another car as a barrier (Intentional contact)" },
+      { keywords: ['pit', 'maneuver', 'pit maneuver', 'spin out'], faultA: 98, desc: "Pit maneuver (Intentional wrecking)" }
     ];
     let ruleMatch = null;
     let ruleScore = 0;
@@ -63,7 +69,10 @@ export async function POST(req) {
       'vortex exit': 88,
       'weave block': 15,
       'unsafe rejoin': 80,
-      'track limits': 70
+      'track limits': 70,
+      'netcode': 50,
+      'used as barrier': 95,
+      'pit maneuver': 98
     };
     const heuristicFaultA = heuristicMap[incidentType] || 70;
     // CSV Dataset Matching
@@ -124,6 +133,9 @@ export async function POST(req) {
       "left the door open",
       "closed the door",
       "ran into you like you weren't there",
+      "netcode",
+      "used you as a barrier",
+      "pit maneuver",
       "he was never going to make that pass",
       "you aren't required to leave the door open",
       "a lunge at the last second does not mean you have to give him space",
@@ -157,7 +169,7 @@ RETURN ONLY JSON:
   "rule": "Text",
   "fault": { "Car A": "${finalFaultA}%", "Car B": "${100 - finalFaultA}%" },
   "car_identification": "Car A: Overtaker. Car B: Defender.",
-  "explanation": "Summary paragraph\\n\\nTip A: ...\\nTip B: ...",
+  "explanation": "Summary paragraph\n\nTip A: ...\nTip B: ...",
   "overtake_tip": "Actionable tip for A",
   "defend_tip": "Actionable tip for B",
   "spotter_advice": {
