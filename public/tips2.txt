@@ -1,0 +1,5 @@
+Brake earlier in T1 | braking | (Stewards AI)
+Hold your line | defense | (iRacing Code)
+Rejoin parallel | rejoin | (iRacing 8.1.1.8)
+Mirror check every 3s | vision | (Ross Bentley)
+Yield on blue flag | lapped | (BMW SIM GT Rule 3)
