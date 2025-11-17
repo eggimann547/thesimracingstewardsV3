@@ -1,5 +1,5 @@
 // api/analyze-intranet.js
-// FULLY STABLE + CAR ROLES FIXED + 200+ TIPS RESTORED
+// FULLY RESTORED: Car Roles + 200+ Tips + High Confidence + Stable
 import { z } from 'zod';
 import Papa from 'papaparse';
 import fs from 'fs';
@@ -157,35 +157,49 @@ export async function POST(req) {
       console.log('tips2.txt failed (non-critical):', e.message);
     }
 
-    // === 4. PROMPT: FULL EDUCATIONAL + CAR ROLES ===
-    const prompt = `You are a neutral, educational sim racing steward for r/simracingstewards.
+    // === 4. CAR ROLES: RESTORED FROM PREVIOUS VERSION ===
+    let carIdentification = "Car A: Overtaker. Car B: Defender.";
+    if (incidentType === 'weave block') {
+      carIdentification = "Car A: Defender. Car B: Overtaker.";
+    } else if (incidentType === 'unsafe rejoin') {
+      carIdentification = "Car A: Rejoining car. Car B: On-track car.";
+    } else if (incidentType === 'netcode') {
+      carIdentification = "Car A: Teleporting car. Car B: Affected car.";
+    } else if (incidentType === 'used as barrier') {
+      carIdentification = "Car A: Using car. Car B: Victim car.";
+    } else if (incidentType === 'pit maneuver') {
+      carIdentification = "Car A: Spinning car. Car B: Spun car.";
+    }
+
+    // === 5. PROMPT: FULL + CAR ROLES ===
+    const prompt = `You are a neutral, educational sim racing steward.
 Video: ${url}
 Title: ${titleForPrompt}
 Type: ${incidentType}
 Confidence: ${confidence}
 RULE: ${selectedRule}
-${proTip ? `Include this tip naturally: "${proTip}"` : ''}
-Tone: calm, educational, community-focused. Teach, don’t blame.
+Car Roles: ${carIdentification}
+${proTip ? `Include this tip: "${proTip}"` : ''}
+Tone: calm, educational. Teach, don’t blame.
 1. Quote the rule.
 2. State fault %.
-3. Explain what happened in 3–4 detailed sentences.
-4. Give one actionable overtaking tip for Car A.
-5. Give one actionable defense tip for Car B.
-6. Always include spotter advice.
-7. Make it educational and helpful.
+3. Explain in 3–4 sentences using car roles.
+4. Overtaking tip for the aggressor.
+5. Defense tip for the defender.
+6. Spotter advice.
 RETURN ONLY JSON:
 {
-  "rule": "Text",
+  "rule": "...",
   "fault": { "Car A": "${finalFaultA}%", "Car B": "${100 - finalFaultA}%" },
-  "car_identification": "Car A: Overtaker. Car B: Defender.",
-  "explanation": "3–4 sentence summary\\n\\nTip A: ...\\nTip B: ...\\n\\n${proTip ? proTip : ''}",
-  "overtake_tip": "Actionable tip for A",
-  "defend_tip": "Actionable tip for B",
+  "car_identification": "${carIdentification}",
+  "explanation": "...",
+  "overtake_tip": "...",
+  "defend_tip": "...",
   "spotter_advice": { "overtaker": "...", "defender": "..." },
   "confidence": "${confidence}"
 }`;
 
-    // === 5. Call Grok ===
+    // === 6. Call Grok ===
     const grok = await fetch('https://api.x.ai/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -207,17 +221,17 @@ RETURN ONLY JSON:
     const data = await grok.json();
     const raw = data.choices?.[0]?.message?.content?.trim() || '';
 
-    // === 6. Parse & Finalize ===
+    // === 7. Parse & Finalize ===
     let verdict = {
       rule: selectedRule,
       fault: { "Car A": `${finalFaultA}%`, "Car B": `${100 - finalFaultA}%` },
-      car_identification: "Car A: Overtaker. Car B: Defender.",
-      explanation: `Contact occurred in a ${incidentType} incident. The overtaking car must complete passes safely. Both drivers can improve with better awareness.\n\nTip A: Brake earlier when no overlap.\nTip B: Hold your line firmly.`,
-      overtake_tip: "Establish overlap before committing.",
-      defend_tip: "Stay predictable — don’t weave.",
+      car_identification: carIdentification,
+      explanation: `Contact occurred. Both drivers can improve.\n\nTip A: Brake earlier.\nTip B: Hold line.`,
+      overtake_tip: "Establish overlap.",
+      defend_tip: "Stay predictable.",
       spotter_advice: {
-        overtaker: "Listen to spotter for defender's line before committing.",
-        defender: "React to 'car inside!' call immediately."
+        overtaker: "Listen to spotter.",
+        defender: "React immediately."
       },
       confidence
     };
@@ -229,7 +243,6 @@ RETURN ONLY JSON:
       console.log('Parse failed:', e);
     }
 
-    // Ensure pro tip is in explanation
     if (proTip && !verdict.explanation.includes(proTip)) {
       verdict.explanation += `\n\n${proTip}`;
     }
@@ -241,7 +254,8 @@ RETURN ONLY JSON:
     return Response.json({
       verdict: {
         rule: "Error", fault: { "Car A": "0%", "Car B": "0%" },
-        explanation: err.message || "Server error occurred",
+        car_identification: "Unknown",
+        explanation: err.message || "Server error",
         overtake_tip: "", defend_tip: "", spotter_advice: { overtaker: "", defender: "" },
         confidence: "N/A"
       },
