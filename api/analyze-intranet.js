@@ -1,5 +1,7 @@
 // api/analyze-intranet.js
-// FINAL VERSION – NO MORE QUOTES – NOV 17 2025
+// api/analyze-intranet.js
+// Version: 2.4.0
+// Date:    2025-11-17
 import { z } from 'zod';
 import Papa from 'papaparse';
 import fs from 'fs';
