@@ -145,13 +145,9 @@ export async function POST(req) {
     ];
     const shuffled = [...phrases].sort(() => Math.random() - 0.5);
     const selectedPhrases = shuffled.slice(0, Math.floor(Math.random() * 2) + 1);
-
-    // Use "incident" without quotes in the prompt
-    const titleForPrompt = title === 'incident' ? 'incident' : `"${title}"`;
-
     const prompt = `You are a neutral, educational sim racing steward for r/simracingstewards.
 Video: ${url}
-Title: ${titleForPrompt}
+Title: "${title}"
 Type: ${incidentType}
 ${datasetNote}
 Confidence: ${confidence}
