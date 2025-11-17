@@ -133,4 +133,113 @@ export async function POST(req) {
       "its the responsibility of the overtaking car to do so safely",
       "you didn't have space to make that move", "turn off the racing line"
     ];
-    const shuffled = [...phrases].sort
+    const shuffled = [...phrases].sort(() => Math.random() - 0.5);
+    const selectedPhrases = shuffled.slice(0, Math.floor(Math.random() * 2) + 1);
+
+    const titleForPrompt = title === 'incident' ? 'incident' : `"${title}"`;
+
+    const prompt = `You are a neutral, educational sim racing steward for r/simracingstewards.
+Video: ${url}
+Title: ${titleForPrompt}
+Type: ${incidentType}
+${datasetNote}
+Confidence: ${confidence}
+RULES (use the most relevant):
+- ${selectedRule}
+Use ONLY these phrases naturally (1–2 max):
+${selectedPhrases.map(p => `- "${p}"`).join('\n')}
+Tone: calm, educational, community-focused. No blame.
+1. Quote the rule.
+2. State fault %.
+3. Explain what happened (3–4 sentences, use title/type, 1–2 phrases).
+4. Give one actionable overtaking tip for Car A.
+5. Give one actionable defense tip for Car B.
+6. Always include spotter advice:
+   - Overtaker: "Listen to spotter for defender's line before committing."
+   - Defender: "React to spotter's 'car inside!' call immediately."
+RETURN ONLY JSON:
+{
+  "rule": "Text",
+  "fault": { "Car A": "${finalFaultA}%", "Car B": "${100 - finalFaultA}%" },
+  "car_identification": "Car A: Overtaker. Car B: Defender.",
+  "explanation": "Summary paragraph\\n\\nTip A: ...\\nTip B: ...",
+  "overtake_tip": "Actionable tip for A",
+  "defend_tip": "Actionable tip for B",
+  "spotter_advice": {
+    "overtaker": "Listen to spotter for defender's line before committing.",
+    "defender": "React to spotter's 'car inside!' call immediately."
+  },
+  "confidence": "${confidence}"
+}`;
+
+    // === 4. Call Grok ===
+    const grok = await fetch('https://api.x.ai/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${process.env.GROK_API_KEY}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        model: 'grok-3',
+        messages: [{ role: 'user', content: prompt }],
+        max_tokens: 700,
+        temperature: 0.7,
+        top_p: 0.9
+      }),
+      signal: controller.signal
+    });
+
+    clearTimeout(timeout);
+    if (!grok.ok) throw new Error(`Grok: ${grok.status}`);
+    const data = await grok.json();
+    const raw = data.choices?.[0]?.message?.content?.trim() || '';
+
+    // === 5. Parse Grok Response ===
+    let verdict = {
+      rule: selectedRule,
+      fault: { "Car A": `${finalFaultA}%`, "Car B": `${100 - finalFaultA}%` },
+      car_identification: "Car A: Overtaker. Car B: Defender.",
+      explanation: `Contact occurred due to late move. Its the responsibility of the overtaking car to do so safely.\n\nTip A: Establish overlap before apex.\nTip B: Hold predictable line.`,
+      overtake_tip: "Wait for overlap + listen to spotter",
+      defend_tip: "React to 'car inside!' call",
+      spotter_advice: {
+        overtaker: "Listen to spotter for defender's line before committing.",
+        defender: "React to spotter's 'car inside!' call immediately."
+      },
+      confidence
+    };
+
+    try {
+      const parsed = JSON.parse(raw);
+      verdict = {
+        rule: parsed.rule || verdict.rule,
+        fault: parsed.fault || verdict.fault,
+        car_identification: parsed.car_identification || verdict.car_identification,
+        explanation: parsed.explanation || verdict.explanation,
+        overtake_tip: parsed.overtake_tip || verdict.overtake_tip,
+        defend_tip: parsed.defend_tip || verdict.defend_tip,
+        spotter_advice: parsed.spotter_advice || verdict.spotter_advice,
+        confidence: parsed.confidence || confidence
+      };
+    } catch (e) {
+      console.log('Parse failed:', e);
+    }
+
+    return Response.json({ verdict, matches });
+  } catch (err) {
+    clearTimeout(timeout);
+    return Response.json({
+      verdict: {
+        rule: "Error",
+        fault: { "Car A": "0%", "Car B": "0%" },
+        car_identification: "",
+        explanation: err.message,
+        overtake_tip: "",
+        defend_tip: "",
+        spotter_advice: { overtaker: "", defender: "" },
+        confidence: "N/A"
+      },
+      matches: []
+    }, { status: 500 });
+  }
+}
