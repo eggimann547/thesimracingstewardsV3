@@ -14,29 +14,40 @@ export async function POST(req) {
     const { url } = schema.parse(await req.json());
 
     // === 1. YouTube Title & Incident Type ===
-    const videoId = url.match(/v=([0-9A-Za-z_-]{11})/)?.[1] || '';
+    const videoId = url.match(/v=([0-9A-Za-z_-]{11})/)?.[1] || url.match(/youtu\.be\/([0-9A-Za-z_-]{11})/)?.[1] || '';
     let title = 'incident';
     let incidentType = 'general contact';
 
     if (videoId) {
-      try {
-        const oembed = await fetch(`https://www.youtube.com/oembed?url=${url}&format=json`, { signal: controller.signal });
-        if (oembed.ok) {
-          const data = await oembed.json();
-          title = data.title || 'incident';
+      // Retry oEmbed fetch up to 3 times with timeout and referrer
+      for (let retry = 0; retry < 3; retry++) {
+        try {
+          const oembed = await fetch(`https://www.youtube.com/oembed?url=${url}&format=json`, {
+            signal: AbortSignal.timeout(5000),
+            headers: {
+              'Referer': `https://${process.env.VERCEL_URL || 'thesimracingstewards.com'}`
+            }
+          });
+          if (oembed.ok) {
+            const data = await oembed.json();
+            title = data.title || 'incident';
+            break;
+          }
+        } catch (e) {
+          console.log(`oEmbed retry ${retry + 1} failed:`, e.message);
+          if (retry === 2) title = 'incident'; // Final fallback
         }
-        const lower = title.toLowerCase();
-        if (lower.includes('dive') || lower.includes('brake')) incidentType = 'divebomb';
-        else if (lower.includes('vortex') || lower.includes('exit')) incidentType = 'vortex exit';
-        else if (lower.includes('weave') || lower.includes('block')) incidentType = 'weave block';
-        else if (lower.includes('rejoin') || lower.includes('spin')) incidentType = 'unsafe rejoin';
-        else if (lower.includes('apex') || lower.includes('cut')) incidentType = 'track limits';
-        else if (lower.includes('netcode') || lower.includes('lag') || lower.includes('teleport')) incidentType = 'netcode';
-        else if (lower.includes('barrier') || lower.includes('wall') || lower.includes('used you')) incidentType = 'used as barrier';
-        else if (lower.includes('pit') && lower.includes('maneuver')) incidentType = 'pit maneuver';
-      } catch (e) {
-        console.log('oEmbed failed:', e);
       }
+
+      const lower = title.toLowerCase();
+      if (lower.includes('dive') || lower.includes('brake')) incidentType = 'divebomb';
+      else if (lower.includes('vortex') || lower.includes('exit')) incidentType = 'vortex exit';
+      else if (lower.includes('weave') || lower.includes('block')) incidentType = 'weave block';
+      else if (lower.includes('rejoin') || lower.includes('spin')) incidentType = 'unsafe rejoin';
+      else if (lower.includes('apex') || lower.includes('cut')) incidentType = 'track limits';
+      else if (lower.includes('netcode') || lower.includes('lag') || lower.includes('teleport')) incidentType = 'netcode';
+      else if (lower.includes('barrier') || lower.includes('wall') || lower.includes('used you')) incidentType = 'used as barrier';
+      else if (lower.includes('pit') && lower.includes('maneuver')) incidentType = 'pit maneuver';
     }
 
     // === 2. FAULT ENGINE ===
@@ -72,7 +83,7 @@ export async function POST(req) {
     const heuristicFaultA = heuristicMap[incidentType] || 70;
     const ruleFaultA = ruleMatch?.faultA || 60;
 
-    // CSV
+    // CSV Matching
     try {
       const csvPath = path.join(process.cwd(), 'public', 'simracingstewards_28k.csv');
       const text = fs.readFileSync(csvPath, 'utf8');
@@ -123,7 +134,7 @@ export async function POST(req) {
             divebomb: ['braking', 'overtaking'],
             'vortex exit': ['overtaking'],
             'weave block': ['defense'],
-            'unsafe rejoin': ['general'],
+            'unsafe rejoin': ['rejoin', 'general'],
             'track limits': ['general'],
             netcode: ['netcode'],
             'used as barrier': ['defense'],
@@ -225,7 +236,9 @@ RETURN ONLY JSON:
     return Response.json({
       verdict: {
         rule: "Error", fault: { "Car A": "0%", "Car B": "0%" },
-        explanation: err.message, confidence: "N/A"
+        explanation: err.message || "Server error occurred",
+        overtake_tip: "", defend_tip: "", spotter_advice: { overtaker: "", defender: "" },
+        confidence: "N/A"
       },
       matches: []
     }, { status: 500 });
