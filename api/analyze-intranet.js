@@ -233,7 +233,7 @@ RETURN ONLY JSON:
         rule: "Error",
         fault: { "Car A": "0%", "Car B": "0%" },
         car_identification: "",
-        explanation: err.message,
+        explanation: err.message || "Unknown server error",
         overtake_tip: "",
         defend_tip: "",
         spotter_advice: { overtaker: "", defender: "" },
