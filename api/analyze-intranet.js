@@ -1,5 +1,5 @@
 // api/analyze-intranet.js
-// FULLY RESTORED: EXACT "Car A is X, Car B is Y" + FAULT + 200+ TIPS + STABLE
+// FINAL VERSION: "Car Roles" RESTORED EXACTLY + FULL DATA + 200+ TIPS + STABLE
 import { z } from 'zod';
 import Papa from 'papaparse';
 import fs from 'fs';
@@ -157,7 +157,7 @@ export async function POST(req) {
       console.log('tips2.txt failed (non-critical):', e.message);
     }
 
-    // === 4. CAR ROLES: EXACTLY AS BEFORE — "Car A is the X, Car B is the Y" ===
+    // === 4. CAR ROLES: EXACTLY AS 30 MINUTES AGO — "Car A is the passing car..." ===
     let carAIs = "the passing car";
     let carBIs = "the defending car";
 
@@ -181,16 +181,16 @@ export async function POST(req) {
       carBIs = "the car affected by the cut";
     }
 
-    const carIdentification = `Car A is ${carAIs}. Car B is ${carBIs}.`;
+    const carRoles = `Car A is ${carAIs}. Car B is ${carBIs}.`;
 
-    // === 5. PROMPT: FULL + EXACT "Car A is..." + FAULT ===
+    // === 5. PROMPT: FULL + EXACT "Car Roles" + FAULT ===
     const prompt = `You are a neutral, educational sim racing steward.
 Video: ${url}
 Title: ${titleForPrompt}
 Type: ${incidentType}
 Confidence: ${confidence}
 RULE: ${selectedRule}
-CAR IDENTIFICATION: ${carIdentification}
+CAR ROLES: ${carRoles}
 Fault: Car A ${finalFaultA}%, Car B ${100 - finalFaultA}%
 ${proTip ? `Include this tip: "${proTip}"` : ''}
 Tone: calm, educational. Teach, don’t blame.
@@ -204,7 +204,7 @@ RETURN ONLY JSON:
 {
   "rule": "...",
   "fault": { "Car A": "${finalFaultA}%", "Car B": "${100 - finalFaultA}%" },
-  "car_identification": "${carIdentification}",
+  "car_roles": "${carRoles}",
   "explanation": "...",
   "overtake_tip": "...",
   "defend_tip": "...",
@@ -238,7 +238,7 @@ RETURN ONLY JSON:
     let verdict = {
       rule: selectedRule,
       fault: { "Car A": `${finalFaultA}%`, "Car B": `${100 - finalFaultA}%` },
-      car_identification: carIdentification,
+      car_roles: carRoles,
       explanation: `Contact occurred. Car A is ${carAIs} and is at ${finalFaultA}% fault. Car B is ${carBIs}.`,
       overtake_tip: "Establish overlap before committing.",
       defend_tip: "Hold your line firmly.",
@@ -267,7 +267,7 @@ RETURN ONLY JSON:
     return Response.json({
       verdict: {
         rule: "Error", fault: { "Car A": "0%", "Car B": "0%" },
-        car_identification: "Unable to determine roles",
+        car_roles: "Unable to determine roles",
         explanation: err.message || "Server error",
         overtake_tip: "", defend_tip: "", spotter_advice: { overtaker: "", defender: "" },
         confidence: "N/A"
