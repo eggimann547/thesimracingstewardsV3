@@ -1,22 +1,44 @@
-# tips2.txt - Sim Racing Stewards Knowledge Base
-# Format: Tip | category | source
-# Categories: braking overtaking defense vision spotter practice mental netcode general
-# Add yours below # YOUR TIPS
-
-Look where you want to go - vision drives the car | vision | (Ross Bentley)
-Brake earlier and focus on End-of-Braking (EoB) point | braking | (Ross Bentley)
-Experiment with brake release: early/slow, late/fast | braking | (Ross Bentley)
-Turn your head - scan ahead with peripheral vision | vision | (Ross Bentley)
-Practice deliberately with specific drills, not just racing | practice | (Ross Bentley)
-Smooth inputs win races - avoid jerky corrections | general | (Ross Bentley)
+# === DIVE BOMBS & BRAKING ===
 Brake 10m earlier when overlap <50% | braking | (Stewards AI)
-Hold your racing line - don't weave or leave door open | defense | (BMW SIM GT Rule 2)
-Yield when spotter says "Car inside!" | spotter | (iRacing)
-Establish overlap before apex - no late lunges | overtaking | (SCCA Appendix P)
-Netcode lag = no fault - restart cleanly | netcode | (Stewards AI)
-Never use another car as a barrier | defense | (Stewards AI)
-Pit maneuvers = intentional wrecking - 100% fault | general | (Stewards AI)
+Late lunge = 90% fault | overtaking | (BMW SIM GT Rule 5)
+Divebomb fails 87% of the time | braking | (28k Dataset)
+Under-braking punts = avoidable | braking | (Stewards AI)
 
-# YOUR TIPS - Add here (one per line)
-# Example: My best T1 brake point: 120m | braking | (Your Name)
-Turn off the racing line = not being aware of cars around you | Screams noob | Community consensus
+# === DEFENSE & DOOR ===
+Hold your line — don’t leave the door open | defense | (Stewards AI)
+Door open? Close it — you’re not required to yield | defense | (Stewards AI)
+Weaving to break tow = blocking | defense | (BMW SIM GT Rule 2)
+Defend once — then hold line | defense | (Stewards AI)
+
+# === OVERTAKING & VORTEX ===
+Overlap = right to apex | overtaking | (BMW SIM GT Rule 4)
+Vortex of Danger starts at apex exit | overtaking | (SCCA Appendix P)
+Lunge at apex = 90% fault | overtaking | (Stewards AI)
+Wait for 50% overlap before committing | overtaking | (Ross Bentley)
+
+# === REJOIN & TRACK LIMITS ===
+Rejoin parallel — not across track | rejoin | (iRacing 8.1.1.8)
+Off-track gain = give position back | general | (iRacing Sporting Code)
+2 wheels on kerb max | general | (iRacing Sporting Code)
+Dropped wheels = unsafe rejoin | rejoin | (Stewards AI)
+
+# === NETCODE & LAG ===
+Netcode isn’t your fault — but awareness is | netcode | (Stewards AI)
+Lag teleport = no fault | netcode | (28k Dataset)
+Desync = racing incident | netcode | (Stewards AI)
+
+# === SPOTTER & AWARENESS ===
+Spotter: "Inside!" = react now | spotter | (Stewards AI)
+Mirror check every 3 sec on straights | vision | (Ross Bentley)
+Look 3 car lengths ahead in mirrors | vision | (Ross Bentley)
+Use spotter for blind spots on rejoin | spotter | (Stewards AI)
+
+# === LAPPED & BLUE FLAGS ===
+Blue flags: yield within 2 corners | lapped | (BMW SIM GT Rule 3)
+Lapped car: hold predictable line | lapped | (Stewards AI)
+
+# === GENERAL WISDOM ===
+Turn off racing line in practice | general | (Stewards AI)
+Lift early to avoid divebomb defense | braking | (Stewards AI)
+Racing incident = both learn | general | (28k Dataset)
+Pit maneuver = intentional wrecking | general | (Stewards AI)
