@@ -1,5 +1,5 @@
 // api/analyze-intranet.js
-// FULLY RESTORED: EXACT CAR A / CAR B IDENTIFICATION + FAULT + 200+ TIPS + STABLE
+// FULLY RESTORED: EXACT "Car A is X, Car B is Y" + FAULT + 200+ TIPS + STABLE
 import { z } from 'zod';
 import Papa from 'papaparse';
 import fs from 'fs';
@@ -157,49 +157,48 @@ export async function POST(req) {
       console.log('tips2.txt failed (non-critical):', e.message);
     }
 
-    // === 4. CAR A / CAR B IDENTIFICATION — EXACTLY AS BEFORE (NO CREATIVITY) ===
-    let carA = "Overtaker";
-    let carB = "Defender";
+    // === 4. CAR ROLES: EXACTLY AS BEFORE — "Car A is the X, Car B is the Y" ===
+    let carAIs = "the passing car";
+    let carBIs = "the defending car";
 
     if (incidentType === 'weave block') {
-      carA = "Defender";
-      carB = "Overtaker";
+      carAIs = "the defending car";
+      carBIs = "the passing car";
     } else if (incidentType === 'unsafe rejoin') {
-      carA = "Rejoining car";
-      carB = "On-track car";
+      carAIs = "the rejoining car";
+      carBIs = "the on-track car";
     } else if (incidentType === 'netcode') {
-      carA = "Teleporting car";
-      carB = "Affected car";
+      carAIs = "the teleporting car";
+      carBIs = "the affected car";
     } else if (incidentType === 'used as barrier') {
-      carA = "Using car";
-      carB = "Victim car";
+      carAIs = "the car using another as a barrier";
+      carBIs = "the car used as a barrier";
     } else if (incidentType === 'pit maneuver') {
-      carA = "Spinning car";
-      carB = "Spun car";
+      carAIs = "the car initiating the spin";
+      carBIs = "the car being spun";
     } else if (incidentType === 'track limits') {
-      carA = "Off-track car";
-      carB = "On-track car";
+      carAIs = "the car exceeding track limits";
+      carBIs = "the car affected by the cut";
     }
 
-    const carIdentification = `Car A: ${carA}. Car B: ${carB}.`;
+    const carIdentification = `Car A is ${carAIs}. Car B is ${carBIs}.`;
 
-    // === 5. PROMPT: FULL + EXACT CAR A/B + FAULT ===
+    // === 5. PROMPT: FULL + EXACT "Car A is..." + FAULT ===
     const prompt = `You are a neutral, educational sim racing steward.
 Video: ${url}
 Title: ${titleForPrompt}
 Type: ${incidentType}
 Confidence: ${confidence}
 RULE: ${selectedRule}
-CAR A: ${carA}
-CAR B: ${carB}
+CAR IDENTIFICATION: ${carIdentification}
 Fault: Car A ${finalFaultA}%, Car B ${100 - finalFaultA}%
 ${proTip ? `Include this tip: "${proTip}"` : ''}
 Tone: calm, educational. Teach, don’t blame.
 1. Quote the rule.
 2. State fault %.
-3. Explain in 3–4 sentences using "Car A (${carA})" and "Car B (${carB})".
-4. Overtaking tip for Car A if overtaking.
-5. Defense tip for Car B if defending.
+3. Explain in 3–4 sentences using "Car A is ${carAIs}" and "Car B is ${carBIs}".
+4. Overtaking tip for the passing car.
+5. Defense tip for the defending car.
 6. Spotter advice.
 RETURN ONLY JSON:
 {
@@ -240,7 +239,7 @@ RETURN ONLY JSON:
       rule: selectedRule,
       fault: { "Car A": `${finalFaultA}%`, "Car B": `${100 - finalFaultA}%` },
       car_identification: carIdentification,
-      explanation: `Contact occurred. Car A (${carA}) is at ${finalFaultA}% fault. Car B (${carB}) can improve.`,
+      explanation: `Contact occurred. Car A is ${carAIs} and is at ${finalFaultA}% fault. Car B is ${carBIs}.`,
       overtake_tip: "Establish overlap before committing.",
       defend_tip: "Hold your line firmly.",
       spotter_advice: {
