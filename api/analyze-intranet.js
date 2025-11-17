@@ -1,4 +1,5 @@
 // api/analyze-intranet.js
+// KNOWN-WORKING VERSION – revert to this for 100% stability
 import { z } from 'zod';
 import Papa from 'papaparse';
 import fs from 'fs';
@@ -19,35 +20,24 @@ export async function POST(req) {
     let incidentType = 'general contact';
 
     if (videoId) {
-      // Retry oEmbed fetch up to 3 times with timeout and referrer
-      for (let retry = 0; retry < 3; retry++) {
-        try {
-          const oembed = await fetch(`https://www.youtube.com/oembed?url=${url}&format=json`, {
-            signal: AbortSignal.timeout(5000),
-            headers: {
-              'Referer': `https://${process.env.VERCEL_URL || 'thesimracingstewards.com'}`
-            }
-          });
-          if (oembed.ok) {
-            const data = await oembed.json();
-            title = data.title || 'incident';
-            break;
-          }
-        } catch (e) {
-          console.log(`oEmbed retry ${retry + 1} failed:`, e.message);
-          if (retry === 2) title = 'incident'; // Final fallback
+      try {
+        const oembed = await fetch(`https://www.youtube.com/oembed?url=${url}&format=json`, { signal: controller.signal });
+        if (oembed.ok) {
+          const data = await oembed.json();
+          title = data.title || 'incident';
         }
+        const lower = title.toLowerCase();
+        if (lower.includes('dive') || lower.includes('brake')) incidentType = 'divebomb';
+        else if (lower.includes('vortex') || lower.includes('exit')) incidentType = 'vortex exit';
+        else if (lower.includes('weave') || lower.includes('block')) incidentType = 'weave block';
+        else if (lower.includes('rejoin') || lower.includes('spin')) incidentType = 'unsafe rejoin';
+        else if (lower.includes('apex') || lower.includes('cut')) incidentType = 'track limits';
+        else if (lower.includes('netcode') || lower.includes('lag') || lower.includes('teleport')) incidentType = 'netcode';
+        else if (lower.includes('barrier') || lower.includes('wall') || lower.includes('used you')) incidentType = 'used as barrier';
+        else if (lower.includes('pit') && lower.includes('maneuver')) incidentType = 'pit maneuver';
+      } catch (e) {
+        console.log('oEmbed failed (non-critical):', e);
       }
-
-      const lower = title.toLowerCase();
-      if (lower.includes('dive') || lower.includes('brake')) incidentType = 'divebomb';
-      else if (lower.includes('vortex') || lower.includes('exit')) incidentType = 'vortex exit';
-      else if (lower.includes('weave') || lower.includes('block')) incidentType = 'weave block';
-      else if (lower.includes('rejoin') || lower.includes('spin')) incidentType = 'unsafe rejoin';
-      else if (lower.includes('apex') || lower.includes('cut')) incidentType = 'track limits';
-      else if (lower.includes('netcode') || lower.includes('lag') || lower.includes('teleport')) incidentType = 'netcode';
-      else if (lower.includes('barrier') || lower.includes('wall') || lower.includes('used you')) incidentType = 'used as barrier';
-      else if (lower.includes('pit') && lower.includes('maneuver')) incidentType = 'pit maneuver';
     }
 
     // === 2. FAULT ENGINE ===
@@ -152,28 +142,28 @@ export async function POST(req) {
       console.log('tips2.txt failed (non-critical):', e);
     }
 
-    // === 4. PROMPT: FULL A + B HYBRID ===
+    // === 4. PROMPT: FULL EDUCATIONAL SUMMARY ===
     const prompt = `You are a neutral, educational sim racing steward for r/simracingstewards.
 Video: ${url}
 Title: ${titleForPrompt}
 Type: ${incidentType}
 Confidence: ${confidence}
 RULE: ${selectedRule}
-${proTip ? `Include this pro tip naturally in the explanation: "${proTip}"` : ''}
-Tone: calm, educational, community-focused. Teach, don’t blame.
+${proTip ? `Include this tip: "${proTip}"` : ''}
+Tone: calm, educational, community-focused. No blame.
 1. Quote the rule.
 2. State fault %.
-3. Explain what happened in 3–4 detailed sentences.
+3. Explain what happened in 3–4 detailed sentences using title/type.
 4. Give one actionable overtaking tip for Car A.
 5. Give one actionable defense tip for Car B.
 6. Always include spotter advice.
-7. Make it educational and helpful.
+7. Make it educational — teach, don’t shame.
 RETURN ONLY JSON:
 {
   "rule": "Text",
   "fault": { "Car A": "${finalFaultA}%", "Car B": "${100 - finalFaultA}%" },
   "car_identification": "Car A: Overtaker. Car B: Defender.",
-  "explanation": "3–4 sentence summary\\n\\nTip A: ...\\nTip B: ...\\n\\n${proTip ? proTip : ''}",
+  "explanation": "Detailed 3–4 sentence summary\\n\\nTip A: ...\\nTip B: ...",
   "overtake_tip": "Actionable tip for A",
   "defend_tip": "Actionable tip for B",
   "spotter_advice": { "overtaker": "...", "defender": "..." },
@@ -202,7 +192,7 @@ RETURN ONLY JSON:
     const data = await grok.json();
     const raw = data.choices?.[0]?.message?.content?.trim() || '';
 
-    // === 6. Parse & Finalize ===
+    // === 6. Parse & Enhance ===
     let verdict = {
       rule: selectedRule,
       fault: { "Car A": `${finalFaultA}%`, "Car B": `${100 - finalFaultA}%` },
@@ -224,11 +214,11 @@ RETURN ONLY JSON:
       console.log('Parse failed:', e);
     }
 
-    // Ensure pro tip is in explanation
-    if (proTip && !verdict.explanation.includes(proTip)) {
+    // Inject pro tip
+    if (proTip && confidence !== 'Low') {
       verdict.explanation += `\n\n${proTip}`;
+      verdict.pro_tip = proTip;
     }
-    verdict.pro_tip = proTip;
 
     return Response.json({ verdict, matches });
   } catch (err) {
@@ -236,7 +226,7 @@ RETURN ONLY JSON:
     return Response.json({
       verdict: {
         rule: "Error", fault: { "Car A": "0%", "Car B": "0%" },
-        explanation: err.message || "Server error occurred",
+        explanation: err.message,
         overtake_tip: "", defend_tip: "", spotter_advice: { overtaker: "", defender: "" },
         confidence: "N/A"
       },
