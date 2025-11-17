@@ -1,5 +1,5 @@
 // api/analyze-intranet.js
-// KNOWN WORKING — DO NOT CHANGE
+// 100% STABLE – NO tips2.txt, NO retries
 import { z } from 'zod';
 import Papa from 'papaparse';
 import fs from 'fs';
@@ -14,7 +14,7 @@ export async function POST(req) {
   try {
     const { url } = schema.parse(await req.json());
 
-    // === 1. YouTube Title ===
+    // ---- YouTube title ----
     const videoId = url.match(/v=([0-9A-Za-z_-]{11})/)?.[1] || url.match(/youtu\.be\/([0-9A-Za-z_-]{11})/)?.[1] || '';
     let title = 'incident';
     if (videoId) {
@@ -29,7 +29,7 @@ export async function POST(req) {
       }
     }
 
-    // === 2. Incident Type ===
+    // ---- Incident type ----
     const lower = title.toLowerCase();
     let incidentType = 'general contact';
     if (lower.includes('dive') || lower.includes('brake')) incidentType = 'divebomb';
@@ -38,7 +38,7 @@ export async function POST(req) {
     else if (lower.includes('rejoin') || lower.includes('spin')) incidentType = 'unsafe rejoin';
     else if (lower.includes('netcode') || lower.includes('lag')) incidentType = 'netcode';
 
-    // === 3. CSV Matching ===
+    // ---- CSV matching ----
     let matches = [];
     let finalFaultA = 60;
     try {
@@ -68,7 +68,7 @@ export async function POST(req) {
     finalFaultA = Math.min(98, Math.max(5, finalFaultA));
     const confidence = matches.length >= 3 ? 'High' : matches.length >= 1 ? 'Medium' : 'Low';
 
-    // === 4. Simple Tip (No tips2.txt) ===
+    // ---- Hard-coded tip (no file) ----
     const tips = {
       divebomb: "Brake earlier when no overlap.",
       'vortex exit': "Avoid late moves in the vortex.",
@@ -78,7 +78,7 @@ export async function POST(req) {
     };
     const proTip = tips[incidentType] || "Both drivers can improve with awareness.";
 
-    // === 5. Prompt ===
+    // ---- Grok prompt ----
     const prompt = `You are a neutral sim racing steward.
 Video: ${url}
 Title: "${title}"
@@ -97,7 +97,6 @@ Return ONLY JSON:
   "confidence": "${confidence}"
 }`;
 
-    // === 6. Grok ===
     const grok = await fetch('https://api.x.ai/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -128,12 +127,7 @@ Return ONLY JSON:
       confidence
     };
 
-    try {
-      const parsed = JSON.parse(raw);
-      verdict = { ...verdict, ...parsed };
-    } catch (e) {
-      console.log('Parse failed:', e);
-    }
+    try { verdict = { ...verdict, ...JSON.parse(raw) }; } catch (e) { console.log('Parse failed:', e); }
 
     verdict.explanation += `\n\n${proTip}`;
 
@@ -145,9 +139,7 @@ Return ONLY JSON:
         rule: "Error",
         fault: { "Car A": "0%", "Car B": "0%" },
         explanation: "Server error. Try again.",
-        overtake_tip: "",
-        defend_tip: "",
-        spotter_advice: { overtaker: "", defender: "" },
+        overtake_tip: "", defend_tip: "", spotter_advice: { overtaker: "", defender: "" },
         confidence: "N/A"
       },
       matches: []
