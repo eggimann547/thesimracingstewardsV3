@@ -15,7 +15,7 @@ export default function Home() {
   const [thumbnail, setThumbnail] = useState('');
   const [matches, setMatches] = useState([]);
 
-  const handleSubmit = async (e: any) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError(''); setResult(null); setThumbnail(''); setLoading(true); setMatches([]);
 
@@ -23,7 +23,7 @@ export default function Home() {
       const videoId = url.match(/(?:v=|\/)([0-9A-Za-z_-]{11})/)?.[1];
       if (videoId) setThumbnail(`https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`);
 
-      const payload: any = {
+      const payload = {
         url,
         incidentType,
         carA: carA.trim(),
@@ -46,7 +46,7 @@ export default function Home() {
 
       setResult(data.verdict);
       setMatches(data.matches || []);
-    } catch (err: any) {
+    } catch (err) {
       setError(err.message);
     } finally {
       setLoading(false);
@@ -55,13 +55,14 @@ export default function Home() {
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
-      {/* Browser tab + SEO */}
+
+      {/* Browser tab */}
       <head>
         <title>The Sim Racing Stewards AI Tool</title>
-        <meta name="description" content="Human-in-the-loop incident analysis powered by 28,000 real precedents" />
+        <meta name="description" content="Human-in-the-loop incident analysis • 28,000 real precedents" />
       </head>
 
-      {/* LOGO BANNER */}
+      {/* LOGO */}
       <div className="w-full bg-white dark:bg-gray-800 shadow-xl border-b-4 border-blue-600">
         <div className="w-full px-6 py-8 flex items-center justify-center">
           <img
@@ -70,7 +71,7 @@ export default function Home() {
             className="w-full max-w-5xl h-auto object-contain drop-shadow-lg"
             onError={(e) => {
               e.currentTarget.style.display = 'none';
-              e.currentTarget.nextElementSibling!.style.display = 'flex';
+              e.currentTarget.nextElementSibling.style.display = 'flex';
             }}
           />
           <div className="hidden w-full max-w-5xl h-40 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl items-center justify-center text-white font-bold text-4xl shadow-2xl">
@@ -85,7 +86,7 @@ export default function Home() {
             The Sim Racing Stewards AI Tool
           </h1>
           <p className="text-xl text-gray-600 dark:text-gray-300 mt-4">
-            Human-in-the-loop • 28,000 real precedents • Instant, educational verdicts
+            Human-in-the-loop • 28,000 real precedents • Instant verdicts
           </p>
         </div>
 
@@ -241,7 +242,7 @@ export default function Home() {
                       onClick={() => {
                         const text = `[The Sim Racing Stewards AI Tool]\n${result.car_identification}\nFault: A ${Object.entries(result.fault).find(([k]) => k.includes('Car A'))?.[1]} / B ${Object.entries(result.fault).find(([k]) => k.includes('Car B'))?.[1]}\n\n${result.explanation}\n\nTip: ${result.pro_tip}`;
                         navigator.clipboard.writeText(text);
-                        alert('Copied to clipboard!');
+                        alert('Copied!');
                       }}
                       className="flex-1 p-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold"
                     >
@@ -251,7 +252,7 @@ export default function Home() {
                       onClick={() => {
                         const short = `A ${Object.entries(result.fault).find(([k]) => k.includes('Car A'))?.[1]} / B ${Object.entries(result.fault).find(([k]) => k.includes('Car B'))?.[1]}`;
                         navigator.clipboard.writeText(short);
-                        alert('Short version copied!');
+                        alert('Short copied!');
                       }}
                       className="flex-1 p-3 bg-green-600 hover:bg-green-700 text-white rounded-lg font-bold"
                     >
