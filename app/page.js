@@ -83,7 +83,7 @@ export default function Home() {
             The Sim Racing Stewards AI Tool
           </h1>
           <p className="text-xl text-gray-600 dark:text-gray-300 mt-4">
-            Human-in-the-loop • 28,000 real precedents • Instant verdicts
+            Sim Racing incident analysis • 28,000 real precedents • Expert Tips
           </p>
         </div>
 
