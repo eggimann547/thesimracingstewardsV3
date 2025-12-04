@@ -273,3 +273,54 @@ Passing under yellow conditions is an automatic severe penalty | illegal overtak
 // FALSE START / JUMP START
 Moving before the lights go out or the flag drops is a jump start — serve your penalty | jump start | (Universal rule)
 Anticipating the start is tempting but never worth the drive-through | jump start | (Stewards AI)
+
+// USED AS A BARRIER / SQUEEZE
+Using another car as a moving barrier to defend is illegal — leave racing room | used as barrier | (iRacing 9.4 + LFM)
+Squeezing a car toward the wall with no overlap is 100% fault on the defender | used as barrier | (28k precedent 96%)
+You cannot push someone off-track just because they are on your inside | used as barrier | (Driver61)
+
+// PIT-LANE INCIDENT
+Pit entry/exit collisions are almost always on the car crossing the blend line unsafely | pit-lane incident | (iRacing + ACC)
+Stay in your lane in the pits — weaving or blocking in pit lane is a penalty | pit-lane incident | (LFM Rule 14)
+
+// START-LINE CHAOS / T1 PILE-UP
+T1 incidents with low overlap are usually racing incidents — survive first, overtake later | t1 chaos | (Every sim racer ever)
+Brake 15–20 m earlier into T1 on lap 1 — survival > hero moves | t1 chaos | (Stewards AI)
+
+// INTENTIONAL WRECK / REVENGE
+Any deliberate contact off the racing line is intentional wrecking — expect a ban | intentional wreck | (All league CoCs)
+Revenge is never acceptable — report and move on | intentional wreck | (Community rule #1)
+
+// CROWD-STRIKE / ACCORDION EFFECT
+The accordion effect is real — leave an extra half-second gap into braking zones | accordion | (Driver61)
+Following too closely in a pack causes 90% of multi-car crashes | accordion | (28k precedent)
+
+// BLOCKING WHILE BEING LAPPED
+Lapped cars must not defend — hold your line and let leaders through cleanly | blue flag block | (iRacing Sporting Code)
+Blocking a faster car on a blue flag is unsportsmanlike and penalised | blue flag block | (LFM)
+
+// CUTTING THE TRACK / TRACK LIMITS ABUSE
+Four wheels off = track limits violation — repeated abuse = penalty | track limits | (ACC + LFM)
+Gaining time by cutting = give the position back immediately | track limits | (iRacing 8.1.1.8)
+
+// FALSE START / JUMP START
+Rolling before lights out = jump start — serve your penalty | jump start | (Universal rule)
+
+// ILLEGAL OVERTAKE UNDER SC/VSC/FCY
+No position changes under Safety Car or yellow — automatic severe penalty | illegal overtake sc | (Every rulebook)
+
+// OVER-AGGRESSIVE DEFENSE (2+ MOVES)
+One move per straight only — two or more = illegal blocking | aggressive defense | (iRacing 9.3)
+Reactionary weaving after the attacker commits is over-aggressive defense | aggressive defense | (LFM)
+
+// RE-ENTRY AFTER OFF-TRACK (GAINING ADVANTAGE)
+If you go off and rejoin ahead, you must give the place back immediately | rejoin advantage | (iRacing Sporting Code)
+Gaining a lasting advantage off-track is illegal — yield the position | rejoin advantage | (LFM + ACC)
+
+// TRACK REJOIN BLOCKING RACING LINE
+Rejoining across the racing line and impeding traffic = full fault | rejoin block | (SRA + LFM)
+Never rejoin directly onto the racing line — merge safely | rejoin block | (Driver61)
+
+// WRONG WAY / GHOSTING VIOLATION
+Driving the wrong way on track = immediate disqualification | wrong way | (All leagues)
+Abusing ghosting to block or gain advantage = ban | wrong way | (Community rule)
