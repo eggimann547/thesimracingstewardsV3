@@ -1,7 +1,51 @@
 incident_type,thread_id,title,youtube_url,ruling,reason,fault_a
-"Vortex of Danger","18v9x2j","Vortex of Danger Exit Contact","https://youtu.be/AbCdEf12345","Overtaker Fault","Classic Vortex of Danger – overtaker entered blind spot with <30% overlap","92"
-"Vortex of Danger","1b2c3d4","Draft Lift-Off Spin","https://youtu.be/XyZ12345678","Overtaker Fault","Lead car lifted in draft, following car lost downforce – 100% on follower for tailgating","100"
-"Divebomb / Late lunge","17a8b9c","T3 Divebomb No Overlap","https://youtu.be/123abcDEF","Overtaker Fault","Zero overlap at turn-in, full fault on diver","95"
-"Unsafe rejoin","19x1y2z","Unsafe Rejoin Across Racing Line","https://youtu.be/ghI789jkl","Rejoin Fault","Crossed racing line without yielding – caused avoidable contact","100"
-"Racing incident (no fault)","1fghij4","Perfect 50/50 Side-by-Side","https://youtu.be/xyz999000","Racing Incident","Both had right to the space, no predominant fault","50"
-"Weave / Block / Defending move","1k2l3m4","Three Moves on Straight","https://youtu.be/aaa111bbb","Defender Fault","Violated one-move rule on straight","85"
+"Vortex of Danger",18v9x2j,"Vortex of Danger Exit Contact",https://youtu.be/5yfqvxhweq,Overtaker Fault,"Classic Vortex of Danger – overtaker had <30% overlap at exit",92
+"Vortex of Danger",1b2c3d4,"Draft Lift-Off Spin – Monza Parabolica",https://youtu.be/XyZ12345678,Overtaker Fault,"Lead car lifted early in draft, follower lost downforce – 100% on tailgater",100
+"Vortex of Danger",1fghij5,"Spa Eau Rouge Vortex",https://youtu.be/9kLmNp12345,Overtaker Fault,"Blind-spot entry into Eau Rouge, no vision for lead car",90
+"Vortex of Danger",1xyz789,"ACC Monza T1 Vortex",https://youtu.be/qRsT456uvWx,Overtaker Fault,"Squeezed lead car into exit vortex – avoidable",88
+"Divebomb / Late lunge",17a8b9c,"T3 Divebomb Zero Overlap",https://youtu.be/123abcDEF,Overtaker Fault,"Late lunge with zero overlap at turn-in point",95
+"Divebomb / Late lunge",1c2d3e4,"Silverstone Maggotts Dive",https://youtu.be/abc789XYZ,Overtaker Fault,"Dive from two cars back, no realistic chance",98
+"Divebomb / Late lunge",1h2i3j4,"Bathurst Conrod Divebomb",https://youtu.be/jkl456mno,Overtaker Fault,"Out-braked himself and punted leader",93
+"Divebomb / Late lunge",1p2q3r4,"Nürburgring T1 Late Dive",https://youtu.be/uvw789rst,Overtaker Fault,"Forced leader wide – classic late lunge",90
+"Weave / Block / Defending move",1k2l3m4,"Three Moves on Kemmel Straight",https://youtu.be/aaa111bbb,Defender Fault,"Violated one-move rule with three direction changes",85
+"Weave / Block / Defending move",1t2u3v4,"Monza Main Straight Weaving",https://youtu.be/ccc333ddd,Defender Fault,"Excessive weaving while being lapped",80
+"Weave / Block / Defending move",1w2x3y4,"Barcelona Back Straight Block",https://youtu.be/eee555fff,Defender Fault,"Two defensive moves on straight – illegal",82
+"Unsafe rejoin",19x1y2z,"Unsafe Rejoin Across Racing Line",https://youtu.be/ghI789jkl,Rejoin Fault,"Crossed racing line without yielding after off-track",100
+"Unsafe rejoin",1a1b2c3,"Rejoin Straight Into Sidepod",https://youtu.be/mno456pqr,Rejoin Fault,"Did not wait for gap – caused own incident",100
+"Unsafe rejoin",1d1e2f3,"Spa Blanchimont Rejoin",https://youtu.be/stu789vwx,Rejoin Fault,"Rejoined parallel but forced avoidance",95
+"Unsafe rejoin",1g1h2i3,"Zandvoort Tarzan Rejoin",https://youtu.be/yz123abc,Rejoin Fault,"Returned directly into racing line",98
+"Netcode / Lag / Teleport",1j1k2l3,"Classic Netcode Punt",https://youtu.be/def456ghi,Racing Incident,"Server replay clean, client-side lag artifact – no fault",0
+"Netcode / Lag / Teleport",1m1n2o3,"Teleport Through Wall",https://youtu.be/jkl789mno,Racing Incident,"Both cars ghosted – pure netcode",0
+"Netcode / Lag / Teleport",1p1q2r3,"Lag Spike Rear-End",https://youtu.be/pqr123stu,Racing Incident,"Rear car disappeared then reappeared in boot",0
+"Used as a barrier / Squeeze",1s1t2u3,"Squeezed Into Wall at T1",https://youtu.be/vwx456yz,Defender Fault,"Deliberately squeezed overtaker into barrier",90
+"Used as a barrier / Squeeze",1v1w2x3,"Monza Lesmo Squeeze",https://youtu.be/123abc456,Defender Fault,"No room given on exit – used as movable chicane",88
+"Pit-lane incident",1y1z2a3,"Pit Exit Collision",https://youtu.be/789def123,Pit Exit Car Fault,"Did not yield to fast lane traffic",95
+"Pit-lane incident",1b1c2d3,"Unsafe Pit Entry Block",https://youtu.be/456ghi789,Pit Entry Car Fault,"Crossed white line and blocked",90
+"Start-line chaos / T1 pile-up",1e1f2g3,"T1 Lap 1 Carnage",https://youtu.be/123jkl456,Racing Incident,"Multiple cars, no predominant fault – racing incident",50
+"Start-line chaos / T1 pile-up",1h1i2j3,"Monza T1 Pile-Up",https://youtu.be/789mno123,Racing Incident,"Concertina effect from cold tyres",50
+"Intentional wreck / Revenge",1k1l2m3,"Revenge Punt Lap 12",https://youtu.be/abc456def,Intentional Wreck,"Deliberate contact after earlier incident",100
+"Intentional wreck / Revenge",1n1o2p3,"Chat Abuse + Wreck",https://youtu.be/ghi789jkl,Intentional Wreck,"Toxic behaviour followed by punt",100
+"Racing incident (no fault)",1q1r2s3,"Perfect 50/50 Side-by-Side",https://youtu.be/mno123pqr,Racing Incident,"Both drivers had right to space – true racing incident",50
+"Racing incident (no fault)",1t1u2v3,"Light Contact Mid-Corner",https://youtu.be/stu456vwx,Racing Incident,"Minor overlap, both turned in reasonably",50
+"Racing incident (no fault)",1w1x2y3,"Apex Rubbing Wheels",https://youtu.be/yz789abc,Racing Incident,"Wheel-to-wheel racing, no fault",50
+"Racing incident (no fault)",1z1a2b3,"Spa Kemmel Draft Touch",https://youtu.be/123def456,Racing Incident,"Draft instability, no blame",50
+"Crowd-strike / Accordion effect",1c1d2e3,"Monza Parabolica Accordion",https://youtu.be/456ghi789,Racing Incident,"Concertina from sudden braking – no predominant fault",50
+"Crowd-strike / Accordion effect",1f1g2h3,"Silverstone Maggotts Concertina",https://youtu.be/789jkl123,Racing Incident,"Mid-pack squeeze, racing incident",50
+"Blocking while being lapped",1i1j2k3,"Lapped Car Weaving",https://youtu.be/abc456def,Lapped Car Fault,"Multiple defensive moves while a lap down",85
+"Blue-flag violation / Ignoring blue flags",1l1m2n3,"Ignored Blue Flags 4 Laps",https://youtu.be/ghi789jkl,Leader Fault,"Repeatedly blocked faster car",80
+"Brake test",1o1p2q3,"Straight-Line Brake Check",https://youtu.be/mno123pqr,Leading Driver Fault,"Deliberate brake test on straight",95
+"Brake test",1r1s2t3,"T1 Brake Test",https://youtu.be/stu456vwx,Leading Driver Fault,"Sudden deceleration to punish overtake",92
+"Cutting the track / Track limits abuse",1u1v2w3,"4th Apex Cut – Monza T1",https://youtu.be/yz789abc,Offender Fault,"Repeated track cutting – penalty",100
+"Cutting the track / Track limits abuse",1x1y2z3,"Spa Eau Rouge Cut",https://youtu.be/123abc456,Offender Fault,"Gained time by exceeding track limits",95
+"False start / Jump start",1a2b3c4,"Jump Start Monza Grid",https://youtu.be/456def789,Offender Fault,"Moved before lights out",100
+"Illegal overtake under SC/VSC/FCY",1d2e3f4,"Overtake Under Safety Car",https://youtu.be/789ghi123,Offender Fault,"Passed before SC line",100
+"Move under braking",1g2h3i4,"Inside Dive Under Braking",https://youtu.be/jkl456mno,Overtaker Fault,"Unstable move under braking – caused contact",90
+"Over-aggressive defense (2+ moves)",1j2k3l4,"Four Moves on Back Straight",https://youtu.be/pqr789stu,Defender Fault,"Excessive direction changes",90
+"Punt / Rear-end under braking",1m2n3o4,"Nose-to-Tail Punt T5",https://youtu.be/vwx123yz123,Overtaker Fault,"Failed to brake in time – rear-end shunt",92
+"Punt / Rear-end under braking",1p2q3r4,"Braking Zone Punt",https://youtu.be/456abc789,Overtaker Fault,"Out-braked himself into leader",95
+"Re-entry after off-track (gaining advantage)",1s2t3u4,"Cut Chicane Gained Position",https://youtu.be/789def456,Offender Fault,"Gained lasting advantage by exceeding track limits",100
+"Side-by-side contact mid-corner",1v2w3x4,"50/50 Mid-Corner Rub",https://youtu.be/abc123def,Racing Incident,"Both had overlap and right to space",50
+"Side-by-side contact mid-corner",1y2z3a4,"Apex Wheel Bang",https://youtu.be/ghi456jkl,Racing Incident,"Normal wheel-to-wheel racing",50
+"Track rejoin blocking racing line",1b2c3d4,"Rejoin Across Racing Line",https://youtu.be/mno789pqr,Rejoin Fault,"Blocked racing line on rejoin",98
+"Unsportsmanlike conduct / Chat abuse",1e2f3g4,"Toxic Chat + Wreck",https://youtu.be/stu123vwx,Unsportsmanlike,"Verbal abuse followed by intentional contact",100
+"Wrong way / Ghosting violation",1h2i3j4,"Drove Wrong Way After Crash",https://youtu.be/yz456abc,Wrong Way,"Continued wrong direction – dangerous",100
