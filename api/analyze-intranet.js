@@ -169,12 +169,12 @@ try {
 
       if (candidates.length > 0) {
         const chosen = candidates[Math.floor(Math.random() * candidates.length)].split('|')[0].trim();
-        proTip = `TheSimRacingStewards Tip: ${chosen}`;
+        proTip = `Tip: ${chosen}`;
       }
     } catch (e) {
       console.warn("Pro tip failed:", e.message);
     }
-    if (!proTip) proTip = "TheSimRacingStewards Tip: Both drivers can improve situational awareness.";
+    if (!proTip) proTip = "Tip: Both drivers can improve situational awareness.";
 
     // 6. Car roles
     let carARole = "the overtaking car", carBRole = "the defending car";
