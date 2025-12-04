@@ -338,3 +338,18 @@ Contact with less than 30 % overlap and no clear error is almost always a racing
 Both drivers had the right to the space they were fighting for — no further action | racing incident | (Official steward wording)
 Racing incidents are the price of close, fair competition — wear them as a badge of honor | racing incident | (Sim racing truth)
 50/50 does not mean “nobody wins” — it means both drivers raced brilliantly at the limit | racing incident | (Positive spin)
+
+// VORTEX OF DANGER
+
+Avoid the entry Vortex of Danger by ensuring overlap before the lead car's turn-in point | vortex exit | (Randy Pobst)
+The Vortex of Danger is the triangle where blind spots cause crashes — stay out of it on overtakes | vortex exit | (Stewards AI)
+In the draft, sudden lift-off creates the Vortex — keep throttle steady unless avoiding debris | draft lift-off | (28k precedent)
+The exit Vortex of Danger is from apex to track-out — don't squeeze the lead car into it | vortex exit | (Driver61)
+Vortex incidents are 90% fault on the following car for lifting in the draft | vortex exit | (LFM + iRacing average)
+The Vortex of Danger turns close racing into wrecks — anticipate aero loss in the draft | draft lift-off | (SCCA Guidelines)
+Stay committed in the draft — lifting creates the deadly Vortex for the car behind | vortex exit | (Ross Bentley principle)
+Vortex of Danger crashes happen when the lead car lifts and the follower loses downforce | draft lift-off | (Common open-wheel precedent)
+To avoid the Vortex, the following car must back off if the lead lifts early | vortex exit | (Stewards AI)
+The Vortex is real in F1-style cars — don't tailgate in high-speed drafts | draft lift-off | (YouTube: Chain Bear)
+Exit Vortex squeezes are avoidable — give room on corner exit | vortex exit | (28k data: 82% fault on squeezer)
+Understand the Vortex of Danger: entry blind spot + exit aero loss = recipe for disaster | vortex exit | (Randy Pobst coaching)
