@@ -324,3 +324,17 @@ Never rejoin directly onto the racing line — merge safely | rejoin block | (Dr
 // WRONG WAY / GHOSTING VIOLATION
 Driving the wrong way on track = immediate disqualification | wrong way | (All leagues)
 Abusing ghosting to block or gain advantage = ban | wrong way | (Community rule)
+
+// RACING INCIDENT 
+Sometimes two reasonable racing moves simply collide — this is a true racing incident with no fault assigned | racing incident | (28k precedent)
+Racing incidents are part of wheel-to-wheel racing — both drivers raced hard and fairly | racing incident | (LFM + iRacing philosophy)
+When neither driver is predominantly at fault, we call it 50/50 and both learn from the replay | racing incident | (Stewards AI)
+No one is to blame when contact results from normal racing overlap and timing | racing incident | (Driver61)
+A racing incident means both drivers could not reasonably have avoided the contact — no penalty | racing incident | (SCCA + ACC)
+True 50/50 incidents are unavoidable when racing at the limit — shake hands and move on | racing incident | (Community golden rule)
+Racing incidents happen to everyone — the mark of a good driver is learning from them | racing incident | (TheSimRacingStewards)
+When fault is impossible to separate, we rule no fault and encourage cleaner racing next time | racing incident | (28k average 48–52%)
+Contact with less than 30 % overlap and no clear error is almost always a racing incident | racing incident | (Precedent data)
+Both drivers had the right to the space they were fighting for — no further action | racing incident | (Official steward wording)
+Racing incidents are the price of close, fair competition — wear them as a badge of honor | racing incident | (Sim racing truth)
+50/50 does not mean “nobody wins” — it means both drivers raced brilliantly at the limit | racing incident | (Positive spin)
