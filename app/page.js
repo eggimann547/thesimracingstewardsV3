@@ -10,7 +10,7 @@ export default function Home() {
   const [stewardNotes, setStewardNotes] = useState('');
   const [manualTitle, setManualTitle] = useState('');
   const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState(null);        // ← fixed: no <any>
+  const [result, setResult] = useState(null);
   const [error, setError] = useState('');
 
   const handleSubmit = async (e) => {
@@ -45,9 +45,27 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-10 px-4">
-      <div className="max-w-4xl mx-auto">
+      {/* LOGO HEADER */}
+      <div className="w-full bg-white dark:bg-gray-800 shadow-xl border-b-4 border-blue-600 py-8">
+        <div className="max-w-5xl mx-auto px-6 flex flex-col items-center">
+          <img
+            src="/logo.png"
+            alt="TheSimRacingStewards"
+            className="h-28 md:h-36 object-contain drop-shadow-2xl mb-4"
+            onError={(e) => {
+              e.currentTarget.style.display = 'none';
+              e.currentTarget.nextElementSibling.style.display = 'block';
+            }}
+          />
+          <div className="hidden text-5xl md:text-7xl font-black bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+            TheSimRacingStewards
+          </div>
+        </div>
+      </div>
+
+      <div className="max-w-4xl mx-auto mt-10">
         <h1 className="text-4xl font-bold text-center mb-2 text-gray-900 dark:text-white">
-          TheSimRacingStewards
+          Incident Verdict Tool
         </h1>
         <p className="text-center text-gray-600 dark:text-gray-300 mb-10">
           Professional, neutral, precedent-backed incident verdicts
@@ -144,7 +162,7 @@ export default function Home() {
                 value={stewardNotes}
                 onChange={(e) => setStewardNotes(e.target.value)}
                 rows={4}
-                placeholder="e.g. Car A dove into the inside late, Car B turned in normally..."
+                placeholder="e.g.g. Car A dove into the inside late, Car B turned in normally..."
                 className="w-full p-4 border rounded-xl dark:bg-gray-700"
               />
             </div>
@@ -159,6 +177,7 @@ export default function Home() {
           </div>
         </form>
 
+        {/* Error & Results — unchanged from your working version */}
         {error && (
           <div className="mt-8 p-6 bg-red-50 dark:bg-red-900/30 border border-red-300 dark:border-red-700 rounded-xl">
             <p className="text-red-800 dark:text-red-200">{error}</p>
@@ -172,10 +191,8 @@ export default function Home() {
               <h2 className="text-3xl font-bold mb-6 text-center text-blue-700 dark:text-blue-400">
                 Official Verdict
               </h2>
-
               <div className="space-y-6 text-lg">
                 <div><strong>Rule:</strong> {result.verdict.rule}</div>
-
                 <div className="grid grid-cols-2 gap-6">
                   {Object.entries(result.verdict.fault).map(([car, fault]) => (
                     <div key={car} className="text-center p-6 bg-gray-50 dark:bg-gray-700 rounded-xl">
@@ -184,19 +201,15 @@ export default function Home() {
                     </div>
                   ))}
                 </div>
-
                 <div><strong>Car Roles:</strong> {result.verdict.car_identification}</div>
-
                 <div className="prose prose-lg dark:prose-invert max-w-none">
                   <p className="whitespace-pre-wrap">{result.verdict.explanation}</p>
                 </div>
-
                 <div className="mt-8 p-6 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/30 dark:to-orange-900/30 rounded-xl border border-amber-300 dark:border-amber-700">
                   <p className="text-xl font-bold text-amber-900 dark:text-amber-200">
                     {result.verdict.pro_tip}
                   </p>
                 </div>
-
                 <div className="text-center text-sm text-gray-500">
                   Confidence: <span className="font-bold">{result.verdict.confidence}</span>
                 </div>
