@@ -1,5 +1,6 @@
 // pages/api/analyze-intranet.js
-// Version: 2.5.0 — Full Incident Coverage + Bulletproof Pro Tips (December 03, 2025)
+// Version: 2.6.0 — Rich Precedents + Video Links (100% backward compatible)
+// December 04, 2025
 
 import { z } from 'zod';
 import Papa from 'papaparse';
@@ -64,7 +65,7 @@ export default async function handler(req, res) {
       "Divebomb / Late lunge": "divebomb",
       "Weave / Block / Defending move": "weave block",
       "Unsafe rejoin": "unsafe rejoin",
-      "Vortex of Danger": "vortex exit",                    // ← FINAL: Unified
+      "Vortex of Danger": "vortex exit",                    // ← unified
       "Netcode / Lag / Teleport": "netcode",
       "Used as a barrier / Squeeze": "used as barrier",
       "Pit-lane incident": "pit-lane incident",
@@ -128,7 +129,7 @@ export default async function handler(req, res) {
 
     finalFaultA = Math.min(98, Math.max(2, finalFaultA));
 
-    // 4. Pro Tip — 100% reliable + full coverage
+    // 4. Pro Tip — branded, bulletproof
     let proTip = "";
 
     try {
@@ -173,13 +174,26 @@ export default async function handler(req, res) {
       );
 
       if (candidates.length > 0) {
-        proTip = candidates[Math.floor(Math.random() * candidates.length)].split('|')[0].trim();
+        const chosen = candidates[Math.floor(Math.random() * candidates.length)].split('|')[0].trim();
+        proTip = `TheSimRacingStewards Tip: ${chosen}`;
       }
     } catch (e) {
       console.warn("Pro tip failed:", e.message);
     }
 
-    // 5. Car roles
+    if (!proTip) proTip = "TheSimRacingStewards Tip: Both drivers can improve situational awareness.";
+
+    // 5. NEW: Rich precedent cases (safe addition)
+    const precedentCases = matches.slice(0, 3).map(m => ({
+      video: m.youtube_url || null,
+      title: m.title || "Sim racing incident",
+      ruling: m.ruling || "No ruling recorded",
+      reason: m.reason || "No reason recorded",
+      faultA: parseFloat(m.fault_pct_driver_a) || 50,
+      thread: m.thread_id ? `https://reddit.com/r/simracingstewards/comments/${m.thread_id}/` : null
+    }));
+
+    // 6. Car roles (unchanged)
     let carARole = "the overtaking car", carBRole = "the defending car";
     switch (incidentKey) {
       case 'weave block': [carARole, carBRole] = ["the defending car", "the overtaking car"]; break;
@@ -194,7 +208,7 @@ export default async function handler(req, res) {
     const carBIdentifier = carB ? ` (${carB.trim()})` : "";
     const carIdentification = `Car A${carAIdentifier} is ${carARole}. Car B${carBIdentifier} is ${carBRole}.`;
 
-    // 6. Grok prompt
+    // 7. Grok verdict (unchanged except proTip is now branded)
     const humanContext = humanInput ? `HUMAN STEWARD OBSERVATIONS (must be reflected exactly, no contradictions):\n"${humanInput}"\n\n` : "";
     const titleContext = effectiveTitle ? `SUBMITTER PERSPECTIVE (title): "${effectiveTitle}"\n` : "";
 
@@ -250,7 +264,12 @@ Return ONLY valid JSON:
 
     verdict.video_title = effectiveTitle;
 
-    res.status(200).json({ verdict, matches: matches.slice(0, 5) });
+    // ← NEW: Rich precedents included safely
+    res.status(200).json({
+      verdict,
+      precedents: precedentCases,    // ← safe new field
+      matches: matches.slice(0, 5)   // ← kept for backward compatibility
+    });
 
   } catch (err) {
     clearTimeout(timeout);
@@ -264,6 +283,7 @@ Return ONLY valid JSON:
         pro_tip: "",
         confidence: "N/A"
       },
+      precedents: [],
       matches: []
     });
   }
