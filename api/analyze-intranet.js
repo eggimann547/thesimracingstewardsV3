@@ -64,7 +64,7 @@ export default async function handler(req, res) {
       "Divebomb / Late lunge": "divebomb",
       "Weave / Block / Defending move": "weave block",
       "Unsafe rejoin": "unsafe rejoin",
-      "Vortex exit / Draft lift-off": "vortex exit",
+      "Vortex of Danger": "vortex exit",                    // ← FINAL: Unified
       "Netcode / Lag / Teleport": "netcode",
       "Used as a barrier / Squeeze": "used as barrier",
       "Pit-lane incident": "pit-lane incident",
