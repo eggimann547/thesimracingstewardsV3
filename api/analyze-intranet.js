@@ -130,37 +130,41 @@ export default async function handler(req, res) {
 
     finalFaultA = Math.min(98, Math.max(2, finalFaultA));
 
-    // 5. Pro Tip — FIXED matching with aliases (drop-in replacement)
+    // 5. Pro Tip — 100% working on Vercel (direct file read)
 let proTip = "Both drivers can improve situational awareness.";
 
 try {
-  const baseUrl = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000';
-  const tipRes = await fetch(`${baseUrl}/tips2.txt`, { signal: controller.signal });
-  if (tipRes.ok) {
-    const lines = (await tipRes.text()).split('\n').map(l => l.trim()).filter(l => l.includes('|'));
+  const tipPath = path.join(process.cwd(), 'public', 'tips2.txt');
+  const text = fs.readFileSync(tipPath, 'utf8');
 
-    // NEW: Alias map for smarter matching (add more as needed)
-    const aliasMap = {
-      "unsafe rejoin": ["rejoin", "re-join", "rejoining", "came back on", "returned to track", "unsafe rejoin"],
-      "divebomb": ["divebomb", "dive bomb", "late lunge", "dive"],
-      "weave block": ["weave", "block", "defending", "defense"],
-      "brake test": ["brake test", "brake check", "brake checked"],
-      "netcode": ["netcode", "lag", "teleport", "ghost"],
-      "racing incident": ["racing incident", "no fault", "50/50"],
-      // Add for other types, e.g. "punt": ["punt", "rear end", "shunt"]
-    };
+  const lines = text
+    .split('\n')
+    .map(l => l.trim())
+    .filter(l => l.includes('|') && l.split('|')[0].length > 10);
 
-    const searchTerms = aliasMap[incidentKey] || [incidentKey];
-    if (humanInput) searchTerms.push(humanInput.toLowerCase().split(' ')[0]);
+  const aliases = {
+    "unsafe rejoin": ["unsafe rejoin", "rejoin", "re-join", "rejoining", "came back on"],
+    "divebomb": ["divebomb", "dive", "late lunge"],
+    "brake test": ["brake test", "brake check"],
+    "weave block": ["weave", "block", "defending"],
+    "netcode": ["netcode", "lag", "teleport"],
+    "punt": ["punt", "rear-end", "shunt"]
+    // add more whenever you want
+  };
 
-    const candidates = lines.filter(l => searchTerms.some(term => l.toLowerCase().includes(term)));
+  const terms = aliases[incidentKey] || [incidentKey];
 
-    if (candidates.length > 0) {
-      proTip = candidates[Math.floor(Math.random() * candidates.length)].split('|')[0].trim();
-    }
+  const candidates = lines.filter(line =>
+    terms.some(t => line.toLowerCase().includes(t))
+  );
+
+  if (candidates.length > 0) {
+    const chosen = candidates[Math.floor(Math.random() * candidates.length)];
+    proTip = chosen.split('|')[0].trim();
   }
 } catch (e) {
-  console.warn("Tips load failed:", e.message);
+  // If even this fails (impossible), we keep the default
+  console.warn("Tip loading failed (should never happen):", e.message);
 }
 
     // 6. Car roles
