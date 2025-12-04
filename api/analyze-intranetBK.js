@@ -1,11 +1,5 @@
-// api/analyze-intranet.js
-// Version: 2.1.0 — Human-in-the-loop + Car A/B Identifiers
-// Date: 2025-11-20
-// Features:
-//   • Human selects incident type (no title bias)
-//   • Optional short description
-//   • Optional Car A & Car B identifiers (e.g. "Red Porsche #24")
-//   • Output: "Car A (Red Porsche #24) is the overtaking car..."
+// pages/api/analyze-intranet.js
+// Version: 2.4.0 — Manual Title for Reddit/Non-Video Support (December 03, 2025)
 
 import { z } from 'zod';
 import Papa from 'papaparse';
@@ -13,17 +7,19 @@ import fs from 'fs';
 import path from 'path';
 
 const schema = z.object({
-  url: z.string().url(),
+  url: z.string().optional().default(""),  // Now optional (for non-video cases)
   incidentType: z.string().min(1, "Please select an incident type"),
-  description: z.string().optional().default(""),
   carA: z.string().optional().default(""),
-  carB: z.string().optional().default("")
+  carB: z.string().optional().default(""),
+  stewardNotes: z.string().optional().default(""),
+  overrideFaultA: z.coerce.number().min(0).max(100).optional().nullable(),
+  manualTitle: z.string().optional().default("")  // ← NEW: For Reddit titles or keywords
 });
 
 async function fetchWithRetry(url, options = {}, retries = 3) {
   for (let i = 0; i < retries; i++) {
     try {
-      const res = await fetch(url, { ...options, signal: options.signal });
+      const res = await fetch(url, { ...options });
       if (res.ok) return res;
       if (i === retries - 1) throw new Error(`Fetch failed: ${res.status}`);
       await new Promise(r => setTimeout(r, 1000 * (i + 1)));
@@ -33,16 +29,29 @@ async function fetchWithRetry(url, options = {}, retries = 3) {
   }
 }
 
-export async function POST(req) {
+export default async function handler(req, res) {
+  if (req.method !== 'POST') return res.status(405).end();
+
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 30000);
 
   try {
-    const { url, incidentType: userType, description, carA, carB } = schema.parse(await req.json());
+    const body = req.body;
+    const {
+      url = "",
+      incidentType: userType,
+      carA = "",
+      carB = "",
+      stewardNotes = "",
+      overrideFaultA = null,
+      manualTitle = ""
+    } = schema.parse(body);
 
-    // 1. Fetch video title (only for display — NOT used in logic)
-    const videoId = url.match(/v=([0-9A-Za-z_-]{11})/)?.[1] || url.match(/youtu\.be\/([0-9A-Za-z_-]{11})/)?.[1] || '';
+    const humanInput = stewardNotes.trim();
+
+    // 1. Fetch title if URL provided (oEmbed)
     let title = 'Sim racing incident';
+    const videoId = url.match(/(?:v=|youtu\.be\/)([0-9A-Za-z_-]{11})/)?.[1];
     if (videoId) {
       try {
         const oembed = await fetch(`https://www.youtube.com/oembed?url=${url}&format=json`, { signal: controller.signal });
@@ -50,7 +59,10 @@ export async function POST(req) {
       } catch {}
     }
 
-    // 2. Map human-selected type to internal key
+    // 2. NEW: Use manualTitle as primary/fallback
+    const effectiveTitle = manualTitle.trim() || title;
+
+    // 3. Incident key mapping (unchanged)
     const typeMap = {
       "Divebomb / Late lunge": "divebomb",
       "Weave / Block / Defending move": "weave block",
@@ -61,99 +73,140 @@ export async function POST(req) {
       "Pit-lane incident": "pit-lane incident",
       "Start-line chaos / T1 pile-up": "t1 chaos",
       "Intentional wreck / Revenge": "intentional wreck",
-      "Racing incident (no fault)": "racing incident"
+      "Racing incident (no fault)": "racing incident",
+      "Crowd-strike / Accordion effect": "accordion",
+      "Blocking while being lapped": "blue flag block",
+      "Blue-flag violation / Ignoring blue flags": "blue flag",
+      "Brake test": "brake test",
+      "Brake check": "brake test",
+      "Cutting the track / Track limits abuse": "track limits",
+      "False start / Jump start": "jump start",
+      "Illegal overtake under SC/VSC/FCY": "illegal overtake sc",
+      "Move under braking": "move under braking",
+      "Over-aggressive defense (2+ moves)": "aggressive defense",
+      "Punt / Rear-end under braking": "punt",
+      "Re-entry after off-track (gaining advantage)": "rejoin advantage",
+      "Side-by-side contact mid-corner": "side contact",
+      "Track rejoin blocking racing line": "rejoin block",
+      "Unsportsmanlike conduct / Chat abuse": "unsportsmanlike",
+      "Wrong way / Ghosting violation": "wrong way"
     };
-
     const incidentKey = typeMap[userType] || "general contact";
 
-    // 3. CSV lookup using human-selected type + description
+    // 4. CSV lookup (enhanced with effectiveTitle)
     let matches = [];
     let finalFaultA = 60;
-    try {
-      const csvPath = path.join(process.cwd(), 'public', 'simracingstewards_28k.csv');
-      const text = fs.readFileSync(csvPath, 'utf8');
-      const parsed = Papa.parse(text, { header: true }).data;
+    let confidence = "Low";
 
-      for (const row of parsed) {
-        if (!row.title) continue;
-        const rowText = `${row.title} ${row.reason || ''} ${row.ruling || ''}`.toLowerCase();
-        let score = 0;
-        if (rowText.includes(incidentKey)) score += 10;
-        if (description && rowText.includes(description.toLowerCase())) score += 8;
-        if (score > 0) matches.push({ ...row, score });
+    if (overrideFaultA !== null) {
+      finalFaultA = Math.round(overrideFaultA);
+      confidence = "Human Override";
+    } else {
+      try {
+        const csvPath = path.join(process.cwd(), 'public', 'simracingstewards_28k.csv');
+        const text = fs.readFileSync(csvPath, 'utf8');
+        const parsed = Papa.parse(text, { header: true }).data;
+
+        for (const row of parsed) {
+          if (!row.title) continue;
+          const rowText = `${row.title} ${row.reason || ''} ${row.ruling || ''}`.toLowerCase();
+          let score = 0;
+          if (rowText.includes(incidentKey)) score += 10;
+          if (humanInput && rowText.includes(humanInput.toLowerCase().substring(0, 30))) score += 8;
+          if (effectiveTitle && rowText.includes(effectiveTitle.toLowerCase().substring(0, 30))) score += 5;  // ← NEW: Gentle title boost
+          if (score > 0) matches.push({ ...row, score });
+        }
+        matches.sort((a, b) => b.score - a.score);
+        matches = matches.slice(0, 5);
+
+        const validFaults = matches.map(m => parseFloat(m.fault_pct_driver_a)).filter(f => !isNaN(f));
+        const csvFaultA = validFaults.length > 0 ? validFaults.reduce((a, b) => a + b, 0) / validFaults.length : 60;
+        finalFaultA = Math.round(csvFaultA * 0.7 + 50 * 0.3);
+        confidence = matches.length >= 4 ? 'Very High' : matches.length >= 2 ? 'High' : matches.length >= 1 ? 'Medium' : 'Low';
+      } catch (e) {
+        console.error(e);
       }
-      matches.sort((a, b) => b.score - a.score);
-      matches = matches.slice(0, 5);
-
-      const validFaults = matches.map(m => parseFloat(m.fault_pct_driver_a)).filter(f => !isNaN(f));
-      const csvFaultA = validFaults.length > 0 ? validFaults.reduce((a, b) => a + b, 0) / validFaults.length : 60;
-      finalFaultA = Math.round(csvFaultA * 0.7 + 50 * 0.3);
-    } catch (e) {}
+    }
 
     finalFaultA = Math.min(98, Math.max(2, finalFaultA));
-    const confidence = matches.length >= 4 ? 'Very High' : matches.length >= 2 ? 'High' : matches.length >= 1 ? 'Medium' : 'Low';
 
-    // 4. Tip from tips2.txt
-    let proTip = "Both drivers can improve situational awareness.";
-    try {
-      const baseUrl = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000';
-      const res = await fetch(`${baseUrl}/tips2.txt`, { signal: controller.signal });
-      if (res.ok) {
-        const lines = (await res.text()).split('\n').map(l => l.trim()).filter(l => l && l.includes('|'));
-        const candidates = lines.filter(l =>
-          l.toLowerCase().includes(incidentKey) ||
-          (description && l.toLowerCase().includes(description.toLowerCase().split(' ')[0]))
-        );
-        if (candidates.length > 0) {
-          proTip = candidates[Math.floor(Math.random() * candidates.length)].split('|')[0].trim();
-        } else if (lines.length > 0) {
-          proTip = lines[Math.floor(Math.random() * lines.length)].split('|')[0].trim();
-        }
-      }
-    } catch {}
+    // 5. Pro Tip — 100% working on Vercel (direct file read)
+let proTip = "Both drivers can improve situational awareness.";
 
-    // 5. Car roles + optional identifiers
+try {
+  const tipPath = path.join(process.cwd(), 'public', 'tips2.txt');
+  const text = fs.readFileSync(tipPath, 'utf8');
+
+  const lines = text
+    .split('\n')
+    .map(l => l.trim())
+    .filter(l => l.includes('|') && l.split('|')[0].length > 10);
+
+  const aliases = {
+    "unsafe rejoin": ["unsafe rejoin", "rejoin", "re-join", "rejoining", "came back on"],
+    "divebomb": ["divebomb", "dive", "late lunge"],
+    "brake test": ["brake test", "brake check"],
+    "weave block": ["weave", "block", "defending"],
+    "netcode": ["netcode", "lag", "teleport"],
+    "punt": ["punt", "rear-end", "shunt"]
+    // add more whenever you want
+  };
+
+  const terms = aliases[incidentKey] || [incidentKey];
+
+  const candidates = lines.filter(line =>
+    terms.some(t => line.toLowerCase().includes(t))
+  );
+
+  if (candidates.length > 0) {
+    const chosen = candidates[Math.floor(Math.random() * candidates.length)];
+    proTip = chosen.split('|')[0].trim();
+  }
+} catch (e) {
+  // If even this fails (impossible), we keep the default
+  console.warn("Tip loading failed (should never happen):", e.message);
+}
+
+    // 6. Car roles
     let carARole = "the overtaking car", carBRole = "the defending car";
     switch (incidentKey) {
-      case 'weave block': carARole = "the defending car"; carBRole = "the overtaking car"; break;
-      case 'unsafe rejoin': carARole = "the rejoining car"; carBRole = "the on-track car"; break;
-      case 'netcode': carARole = "the teleporting car"; carBRole = "the affected car"; break;
-      case 'used as barrier': carARole = "the car using another as a barrier"; carBRole = "the car used as a barrier"; break;
-      case 'pit maneuver': carARole = "the car initiating the spin"; carBRole = "the car being spun"; break;
-      case 'intentional wreck': carARole = "the aggressor"; carBRole = "the victim"; break;
-      case 'racing incident': carARole = "Car A"; carBRole = "Car B"; break;
+      case 'weave block': [carARole, carBRole] = ["the defending car", "the overtaking car"]; break;
+      case 'unsafe rejoin': [carARole, carBRole] = ["the rejoining car", "the on-track car"]; break;
+      case 'netcode': [carARole, carBRole] = ["the teleporting car", "the affected car"]; break;
+      case 'used as barrier': [carARole, carBRole] = ["the car using another as a barrier", "the car used as a barrier"]; break;
+      case 'intentional wreck': [carARole, carBRole] = ["the aggressor", "the victim"]; break;
+      case 'racing incident': [carARole, carBRole] = ["Car A", "Car B"]; break;
     }
 
     const carAIdentifier = carA ? ` (${carA.trim()})` : "";
     const carBIdentifier = carB ? ` (${carB.trim()})` : "";
     const carIdentification = `Car A${carAIdentifier} is ${carARole}. Car B${carBIdentifier} is ${carBRole}.`;
 
-    // 6. Grok prompt — now includes car identifiers
-    const userContext = description ? `Human description: "${description}"\n` : "";
-    const prompt = `You are a senior, neutral sim-racing steward.
+    // 7. Grok prompt (enhanced with effectiveTitle)
+    const humanContext = humanInput ? `HUMAN STEWARD OBSERVATIONS (must be reflected exactly, no contradictions):\n"${humanInput}"\n\n` : "";
+    const titleContext = effectiveTitle ? `SUBMITTER PERSPECTIVE (title): "${effectiveTitle}"\n` : "";
 
-Video URL: ${url}
-Video title (context only): "${title}"
+    const prompt = `You are a senior, neutral sim-racing steward writing an official verdict.
+
+${humanContext}${titleContext}Video URL (if provided): ${url}
 Incident type: ${userType}
-${userContext}
-Car roles: ${carIdentification}
-Suggested fault: Car A ${finalFaultA}%, Car B ${100-finalFaultA}%
+Car identification: ${carIdentification}
+Fault allocation: Car A${carAIdentifier} ${finalFaultA}% — Car B${carBIdentifier} ${100 - finalFaultA}%
 Confidence: ${confidence}
 
 Write a unique, calm, educational verdict in 3–5 sentences.
 Start with: "In this ${userType.toLowerCase()}..."
 Use Car A${carAIdentifier} and Car B${carBIdentifier} throughout.
-Include one actionable lesson.
+If human observations were provided, base the entire explanation on them — do not contradict or ignore them.
+End with this exact pro tip: "${proTip}"
 
 Return ONLY valid JSON:
 {
-  "rule": "relevant rule",
-  "fault": { "Car A": "${finalFaultA}%", "Car B": "${100-finalFaultA}%" },
+  "rule": "relevant rule(s)",
+  "fault": { "Car A${carAIdentifier}": "${finalFaultA}%", "Car B${carBIdentifier}": "${100-finalFaultA}%" },
   "car_identification": "${carIdentification}",
   "explanation": "3–5 unique sentences",
-  "overtake_tip": "specific tip for Car A${carAIdentifier}",
-  "defend_tip": "specific tip for Car B${carBIdentifier}",
-  "spotter_advice": { "overtaker": "tip", "defender": "tip" },
+  "pro_tip": "${proTip}",
   "confidence": "${confidence}"
 }`;
 
@@ -164,7 +217,7 @@ Return ONLY valid JSON:
         model: 'grok-3',
         messages: [{ role: 'user', content: prompt }],
         max_tokens: 700,
-        temperature: 0.8
+        temperature: 0.7
       }),
       signal: controller.signal
     });
@@ -174,39 +227,33 @@ Return ONLY valid JSON:
     const raw = data.choices?.[0]?.message?.content?.trim() || '';
 
     let verdict = {
-      rule: "iRacing Sporting Code / ACC Regulations",
-      fault: { "Car A": `${finalFaultA}%`, "Car B": `${100-finalFaultA}%` },
+      rule: "iRacing Sporting Code / ACC LFM Regulations",
+      fault: { [`Car A${carAIdentifier}`]: `${finalFaultA}%`, [`Car B${carBIdentifier}`]: `${100-finalFaultA}%` },
       car_identification: carIdentification,
-      explanation: `In this ${userType.toLowerCase()}, contact occurred between Car A${carAIdentifier} and Car B${carBIdentifier}. ${proTip}`,
-      overtake_tip: "Establish overlap before committing.",
-      defend_tip: "Hold your line predictably.",
-      spotter_advice: { overtaker: "Wait for clear overlap.", defender: "Don't overreact." },
+      explanation: `In this ${userType.toLowerCase()}, contact occurred between Car A${carAIdentifier} and Car B${carBIdentifier}.\n\n${proTip}`,
+      pro_tip: proTip,
       confidence
     };
 
-    try {
-      const parsed = JSON.parse(raw);
-      verdict = { ...verdict, ...parsed };
-    } catch (e) {}
+    try { Object.assign(verdict, JSON.parse(raw)); } catch (e) {}
 
-    verdict.explanation += `\n\n${proTip}`;
-    verdict.pro_tip = proTip;
-    verdict.video_title = title;
+    verdict.video_title = effectiveTitle; // For display
 
-    return Response.json({ verdict, matches });
+    res.status(200).json({ verdict, matches: matches.slice(0, 5) });
 
   } catch (err) {
     clearTimeout(timeout);
-    return Response.json({
+    console.error(err);
+    res.status(500).json({
       verdict: {
         rule: "Error",
         fault: { "Car A": "—", "Car B": "—" },
         car_identification: "Unable to process",
         explanation: "Something went wrong — please try again.",
-        overtake_tip: "", defend_tip: "", spotter_advice: { overtaker: "", defender: "" },
+        pro_tip: "",
         confidence: "N/A"
       },
       matches: []
-    }, { status: 500 });
+    });
   }
 }
