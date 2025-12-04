@@ -1,0 +1,7 @@
+incident_type,thread_id,title,youtube_url,ruling,reason,fault_a
+"Vortex of Danger","18v9x2j","Vortex of Danger Exit Contact","https://youtu.be/AbCdEf12345","Overtaker Fault","Classic Vortex of Danger – overtaker entered blind spot with <30% overlap","92"
+"Vortex of Danger","1b2c3d4","Draft Lift-Off Spin","https://youtu.be/XyZ12345678","Overtaker Fault","Lead car lifted in draft, following car lost downforce – 100% on follower for tailgating","100"
+"Divebomb / Late lunge","17a8b9c","T3 Divebomb No Overlap","https://youtu.be/123abcDEF","Overtaker Fault","Zero overlap at turn-in, full fault on diver","95"
+"Unsafe rejoin","19x1y2z","Unsafe Rejoin Across Racing Line","https://youtu.be/ghI789jkl","Rejoin Fault","Crossed racing line without yielding – caused avoidable contact","100"
+"Racing incident (no fault)","1fghij4","Perfect 50/50 Side-by-Side","https://youtu.be/xyz999000","Racing Incident","Both had right to the space, no predominant fault","50"
+"Weave / Block / Defending move","1k2l3m4","Three Moves on Straight","https://youtu.be/aaa111bbb","Defender Fault","Violated one-move rule on straight","85"
