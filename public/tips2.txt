@@ -215,3 +215,61 @@ If the following car had no chance to avoid contact due to sudden deceleration, 
 Deliberate brake checking is one of the fastest ways to get a permanent league ban | brake check | (Most league CoCs)
 You own the space in front of you — don't weaponize your brake pedal | brake test | (Ross Bentley principle)
 Brake early if you must, but do it predictably and off-line if someone is close behind | brake check | (Safe racing 101)
+// DIVE BOMB / LATE LUNGE
+You must be significantly alongside before the turn-in point — diving from two cars back is never okay | divebomb | (LFM + iRacing precedent)
+If you are not fully alongside by the 100 m board, you have no right to the apex | divebomb | (BMW SIM GT Rule 4)
+Late lunges with <40 % overlap at apex are the #1 cause of T1 chaos — brake 10-15 m earlier | divebomb | (28k precedent average 88%)
+Divebombs are only successful when you leave racing room — forcing someone wide is 100 % your fault | divebomb | (Driver61)
+
+// WEAVE / BLOCK / DEFENDING MOVE
+One defensive move per straight — two or more is over-aggressive blocking | weave block | (iRacing Sporting Code 9.3)
+You may move once to defend, but you must leave a car’s width on the opposite side | weave block | (LFM Rule 11.2)
+Reacting to the attacker after they have committed is illegal blocking | weave block | (Most league rulebooks)
+Defending is allowed — weaving like a snake is not | weave block | (Stewards AI)
+
+// RACING INCIDENT (NO FAULT)
+Sometimes contact happens with no one truly at fault — call it 50/50 and move on | racing incident | (Community wisdom)
+Racing incidents are unavoidable when two drivers make reasonable moves at the same time | racing incident | (28k precedent)
+No fault does not mean no contact — it means both drivers raced fairly | racing incident | (LFM + SRA)
+
+// MOVE UNDER BRAKING
+Moving across while braking when the other car is alongside is the definition of a punishable move | move under braking | (iRacing 9.2)
+If your front axle is alongside their rear axle on braking, you must leave room — no squeezing | move under braking | (ACC + LFM)
+Brake in a straight line when defending side-by-side — any direction change under braking is illegal | move under braking | (Driver61)
+
+// SIDE-BY-SIDE CONTACT MID-CORNER
+If two cars are side-by-side mid-corner, both must leave a car’s width — contact is shared fault | side contact | (BMW SIM GT Rule 4)
+The car on the inside owns the apex, the car on the outside owns the exit — both must respect the other | side contact | (Ross Bentley)
+Mid-corner contact is almost always 50/50 unless one car clearly understeers or overdrives | side contact | (28k precedent)
+
+// UNSportsmanlike CONDUCT / CHAT ABUSE
+Toxicity in chat is never acceptable — keep it clean or keep it quiet | unsportsmanlike | (Every league CoC)
+Revenge, intentional wrecking, or chat abuse will get you banned faster than anything else | unsportsmanlike | (Stewards AI)
+You can be mad — just don’t type it | unsportsmanlike | (Community golden rule)
+
+// VORTEX EXIT / DRAFT LIFT-OFF
+Lifting off the throttle in the draft on a straight is extremely dangerous — keep it pinned | vortex exit | (LFM + SRA)
+The vortex of death is real — the following car has almost no time to react | vortex exit | (28k precedent 92% fault on lifter)
+Never lift in the draft unless you are avoiding a crash ahead | vortex exit | (Driver61)
+
+// NETCODE / LAG / TELEPORT
+Netcode contacts are never anyone’s fault — call it no fault and move on | netcode | (Every league ever)
+Lag hits are racing incidents — blame the servers, not the drivers | netcode | (Community consensus)
+If a car suddenly teleports into you, it’s netcode — no penalty | netcode | (iRacing official stance)
+
+// PUNT / REAR-END UNDER BRAKING
+Leave at least half a car length under braking — tailgating causes punts | punt | (Safe racing 101)
+If the car in front brakes normally and you hit them, it’s 100 % on the following driver | punt | (28k precedent average 91%)
+Following too close under braking is the fastest way to ruin two races | punt | (Stewards AI)
+
+// TRACK LIMITS / CUTTING THE TRACK
+Repeatedly cutting corners for time advantage will be penalised — stay within the white lines | track limits | (LFM + ACC)
+Gaining a lasting advantage by going off-track means give the position back immediately | track limits | (iRacing Sporting Code)
+
+// ILLEGAL OVERTAKE UNDER SC/VSC/FCY
+No overtaking under Safety Car, VSC, or Full Course Yellow — stay in your position | illegal overtake sc | (Every rulebook)
+Passing under yellow conditions is an automatic severe penalty | illegal overtake sc | (LFM + iRacing)
+
+// FALSE START / JUMP START
+Moving before the lights go out or the flag drops is a jump start — serve your penalty | jump start | (Universal rule)
+Anticipating the start is tempting but never worth the drive-through | jump start | (Stewards AI)
