@@ -101,15 +101,16 @@ export default function Home() {
               Incident Type <span className="text-red-500">(required)</span>
             </label>
             <select value={incidentType} onChange={(e) => setIncidentType(e.target.value)} required
-              className="w-full p-5 border-2 border-gray-300 dark:border-gray-600 rounded-xl focus:ring-4 focus:ring-blue-500 text-lg bg-white dark:bg-gray-800">
-              <option value="">— Choose incident type —</option>
-              <option>Divebomb / Late lunge</option>
-              <option>Weave / Block / Defending move</option>
-              <option>Unsafe rejoin</option>
-              <option>Vortex exit / Draft lift-off</option>
-              <option>Netcode / Lag / Teleport</option>
-              <option>Used as a barrier / Squeeze</option>
-              <option>Pit-lane incident</option>
+            className="w-full p-5 border-2 border-gray-300 dark:border-gray-600 rounded-xl focus:ring-4 focus:ring-blue-500 text-lg bg-white dark:bg-gray-800">
+            <option value="">— Choose incident type —</option>
+            <option>Divebomb / Late lunge</option>
+            <option>Weave / Block / Defending move</option>
+            <option>Unsafe rejoin</option>
+            <option>Vortex exit / Draft lift-off</option>  {/* Keep existing for backward compat */}
+            <option>Vortex of Danger / Draft lift-off</option>  {/* ← NEW: Explicit for searches */}
+            <option>Netcode / Lag / Teleport</option>
+            <option>Used as a barrier / Squeeze</option>
+            <option>Pit-lane incident</option>
               <option>Start-line chaos / T1 pile-up</option>
               <option>Intentional wreck / Revenge</option>
               <option>Racing incident (no fault)</option>
