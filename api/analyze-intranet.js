@@ -103,13 +103,13 @@ try {
   const matches = parsed.filter(row => row.incident_type === userType).slice(0, 3);
 
   precedentCases = matches.map(m => ({
-    video: m.youtube_url || null,
-    title: m.title || "Sim Racing Incident",
-    ruling: m.ruling || "No ruling",
-    reason: m.reason || "No reason",
-    faultA: parseInt(m.fault_a) || 50,
-    thread: m.thread_id ? `https://old.reddit.com/r/simracingstewards/comments/${m.thread_id}/` : null
-  }));
+  // video: removed — we don't need it
+  title: m.title || "Sim Racing Incident",
+  ruling: m.ruling || "No ruling",
+  reason: m.reason || "No reason provided",
+  faultA: parseInt(m.fault_a) || 50,
+  thread: m.thread_id ? `https://old.reddit.com/r/simracingstewards/comments/${m.thread_id}/` : null
+}));
 
   if (precedentCases.length >= 3) confidence = "Very High";
   else if (precedentCases.length >= 2) confidence = "High";
