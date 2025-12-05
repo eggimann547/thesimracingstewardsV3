@@ -1,32 +1,4 @@
-incident_type,thread_id,title,youtube_url,ruling,reason,fault_a
-"Divebomb / Late lunge",1hy4ywgtu85g1,"Who’s at fault?",https://youtu.be/1hy4ywgtu85g1,Overtaker Fault,"Late dive with insufficient overlap at T1",90
-"Divebomb / Late lunge",ov6et646u85g1,"not sure in this situation",https://youtu.be/ov6et646u85g1,Overtaker Fault,"Divebomb from blind spot",95
-"Weave / Block / Defending move",nlzn79umd85g1,"Who is at fault both incidents?",https://youtu.be/nlzn79umd85g1,Defender Fault,"Multiple weaves on straight",85
-"Weave / Block / Defending move",hddpdtygf55g1,"Bruh....",https://youtu.be/hddpdtygf55g1,Defender Fault,"Illegal blocking move",80
-"Unsafe rejoin",uqep49oa785g1,"Got called “stupid” for this move",https://youtu.be/uqep49oa785g1,Rejoin Fault,"Unsafe rejoin across racing line",100
-"Unsafe rejoin",1abc123def456,"Rejoin Fault Example",https://youtu.be/1abc123def456,Rejoin Fault,"Forced avoidance on re-entry",95
-"Vortex of Danger",1euj63d,"Vortex Exit Contact",https://youtu.be/hxXHNF1Dgj4,Overtaker Fault,"Entered vortex blind spot",92
-"Vortex of Danger",1euj63d,"Draft Lift-Off Spin",https://youtu.be/hxXHNF1Dgj4,Overtaker Fault,"Lost downforce in draft",90
-"Netcode / Lag / Teleport",1jkl012mno345,"Lag Teleport Incident",https://youtu.be/1jkl012mno345,Racing Incident,"Netcode artifact – no fault",0
-"Netcode / Lag / Teleport",1mno345pqr678,"Desync Rear-End",https://youtu.be/1mno345pqr678,Racing Incident,"Server lag – racing incident",0
-"Used as a barrier / Squeeze",1pqr678stu901,"Squeeze Into Wall",https://youtu.be/1pqr678stu901,Defender Fault,"Squeezed overtaker into barrier",90
-"Pit-lane incident",1stu901vwx234,"Pit Exit Collision",https://youtu.be/1stu901vwx234,Pit Exit Fault,"Did not yield to traffic",95
-"Start-line chaos / T1 pile-up",1vwx234yz5678,"T1 Lap 1 Carnage",https://youtu.be/1vwx234yz5678,Racing Incident,"Concertina effect – no predominant fault",50
-"Intentional wreck / Revenge",1yz5678abc9012,"Revenge Punt",https://youtu.be/1yz5678abc9012,Intentional Fault,"Deliberate contact after earlier incident",100
-"Racing incident (no fault)",1abc9012def3456,"50/50 Side-by-Side",https://youtu.be/1abc9012def3456,Racing Incident,"Both had right to space",50
-"Crowd-strike / Accordion effect",1def3456ghi7890,"Accordion Brake",https://youtu.be/1def3456ghi7890,Racing Incident,"Mid-pack squeeze from sudden braking",50
-"Blocking while being lapped",1ghi7890jkl1234,"Lapped Car Block",https://youtu.be/1ghi7890jkl1234,Lapped Fault,"Defended against leader",85
-"Blue-flag violation / Ignoring blue flags",1jkl1234mno5678,"Blue Flag Ignore",https://youtu.be/1jkl1234mno5678,Blue Flag Fault,"Repeatedly blocked faster car",80
-"Brake test",1mno5678pqr9012,"Brake Check Straight",https://youtu.be/1mno5678pqr9012,Leading Fault,"Deliberate sudden deceleration",95
-"Brake check",1pqr9012stu3456,"Brake Check T1",https://youtu.be/1pqr9012stu3456,Leading Fault,"Sudden brake to punish overtake",92
-"Cutting the track / Track limits abuse",1stu3456vwx7890,"Repeated Apex Cuts",https://youtu.be/1stu3456vwx7890,Offender Fault,"Gained time by exceeding limits 4x",100
-"False start / Jump start",1vwx7890yz1234,"Jump Start Grid",https://youtu.be/1vwx7890yz1234,Offender Fault,"Moved before lights out",100
-"Illegal overtake under SC/VSC/FCY",1yz1234abc5678,"Overtake Under Yellow",https://youtu.be/1yz1234abc5678,Offender Fault,"Passed before SC line",100
-"Move under braking",1abc5678def9012,"Inside Move Under Braking",https://youtu.be/1abc5678def9012,Overtaker Fault,"Unstable direction change under brakes",90
-"Over-aggressive defense (2+ moves)",1def9012ghi3456,"Four Moves on Straight",https://youtu.be/1def9012ghi3456,Defender Fault,"Excessive direction changes",90
-"Punt / Rear-end under braking",1ghi3456jkl7890,"Nose-to-Tail Punt",https://youtu.be/1ghi3456jkl7890,Overtaker Fault,"Failed to brake in time",92
-"Re-entry after off-track (gaining advantage)",1jkl7890mno1234,"Chicane Cut Gain",https://youtu.be/1jkl7890mno1234,Offender Fault,"Gained lasting advantage off-track",100
-"Side-by-side contact mid-corner",1mno1234pqr5678,"Mid-Corner Rub",https://youtu.be/1mno1234pqr5678,Racing Incident,"Wheel-to-wheel racing, no fault",50
-"Track rejoin blocking racing line",1pqr5678stu9012,"Rejoin Into Line",https://youtu.be/1pqr5678stu9012,Rejoin Fault,"Blocked racing line on re-entry",98
-"Unsportsmanlike conduct / Chat abuse",1stu9012vwx3456,"Toxic Wreck",https://youtu.be/1stu9012vwx3456,Unsportsmanlike,"Abuse + intentional contact",100
-"Wrong way / Ghosting violation",1vwx3456yz7890,"Wrong Way After Spin",https://youtu.be/1vwx3456yz7890,Wrong Way,"Drove reverse direction – dangerous",100
+incident_type,thread_id,title,ruling,reason,fault_a
+"Vortex of Danger","1euj63d","I know I screwed up in the Vortex of Danger but...",Overtaker Fault,"Entered blind spot with insufficient overlap",92
+"Divebomb / Late lunge","1f9z0z1","Late divebomb T1 — who’s at fault?",Overtaker Fault,"No overlap at apex — classic divebomb",95
+"Unsafe rejoin","1c6w0w0","Rejoined across racing line",Rejoin Fault,"Did not wait for safe gap",100
