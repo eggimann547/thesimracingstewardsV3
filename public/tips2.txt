@@ -247,6 +247,7 @@ It's early in the race and there's chaos all around. You need to have better awa
 // INTENTIONAL WRECK / REVENGE
 Any deliberate contact off the racing line is intentional wrecking — expect a ban | intentional wreck | (All league CoCs)
 Revenge is never acceptable — report and move on | intentional wreck | (Community rule #1)
+Retaliation is something you need to protest, no matter what happened beforehand. Retaliation is retaliation regardless. | intentional wreck | (tsrs)
 
 // CROWD-STRIKE / ACCORDION EFFECT
 The accordion effect is real — leave an extra half-second gap into braking zones | accordion | (Driver61)
