@@ -239,7 +239,7 @@ export default function Home() {
                   </div>
                   <div className="mt-8 p-6 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/30 dark:to-orange-900/30 rounded-xl border border-amber-300 dark:border-amber-700">
                     <p className="text-xl font-bold text-amber-900 dark:text-amber-200">
-                      {result.verdict.pro_tip}
+                    {result.verdict.pro_tip.replace(/^TheSimRacingStewards Tip:\s*/, '').replace(/^Tip:\s*/, '')}
                     </p>
                   </div>
                   <div className="text-center text-sm text-gray-500">
