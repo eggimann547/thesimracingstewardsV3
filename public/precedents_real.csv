@@ -1,4 +1,4 @@
-incident_type,thread_id,title,youtube_url,ruling,reason,fault_a
+incident_type,thread_id,title,series,ruling,reason,fault_a
 Unsafe rejoin,u9rwqa,Unsafe re-entry ruins someone's race :(,,Rejoin Fault,Drivers on the racing surface have the right-of-way. You must wait for a clear gap before re-entering.,100
 Unsafe rejoin,18vneqo,Is this unsafe rejoin reportable?,,Rejoin Fault,Hold your brakes and join safely when traffic has passed. Don't try to jump back into the race immediately,100
 Divebomb / Late lunge,1ix851f,It was definitely a lunge but I’m unsure if it was illegal or not,,Overtaker Fault,"The car ahead was already turning in, and you had no significant overlap. At that point they have no obligation to leave you space.",90
@@ -112,23 +112,23 @@ Illegal overtake under SC/VSC/FCY,1p64fzp,Was this a valid overtake?,,Illegal ov
 Illegal overtake under SC/VSC/FCY,1ppkmy1,Was The Overtake On,,Illegal overtake sc,SC restart overtake before line — violation.,100
 Illegal overtake under SC/VSC/FCY,1p12wax,Was the Sauber overtake ok?,,Illegal overtake sc,Sauber passed under SC — illegal.,100
 Illegal overtake under SC/VSC/FCY,1pw9fik,Was this a fair overtake?,,Illegal overtake sc,SC-off overtake disputed — illegal if under conditions.,100
-Divebomb / Late lunge,1nbdmcl,(F1 25) Pretty clear who's at fault,,Overtaker Fault,F1 25 late lunge with insufficient overlap at turn-in.,90
-Racing Incident / 50-50,1odcyix,"Who is at fault and what penalty should it Be?",,Racing Incident,F1 wheel-to-wheel contact — shared responsibility under F1 guidelines.,50
-Divebomb / Late lunge,1p4ihnb,Who is at fault?,,Overtaker Fault,Textbook F1 divebomb — green car at fault for aggressive move.,95
-Racing Incident / 50-50,1p3cd50,F1 25 League racing incident,,Racing Incident,F1 25 league incident — both at fault per F1 rules.,50
-Side-by-side contact,1pij4bf,Can you tell me who's at fault here,,Shared Fault,F1 side contact — Merc squeezed but both contributed.,60
-Divebomb / Late lunge,1n9467v,Who is at fault F1 25,,Overtaker Fault,F1 25 dive with low overlap — overtaker primary fault.,90
-Side-by-side contact,1ofq2m2,Who is at fault? F1 25 1V1 against my friend.,,Racing Incident,F1 25 1v1 minor contact — racing incident.,0
-Side-by-side contact,1po608j,Miami f1 25 who's in the wrong,,Shared Fault,F1 25 Miami — both failed to acknowledge yellow - divebomb from far back.,70
-Divebomb / Late lunge,1oi6xsk,Divebomb or racing incident?,,Overtaker Fault,F1 divebomb — POV at fault per F1 rules (inside car earned apex).,90
-Racing Incident / 50-50,1ptxnlo,Who is at fault here ?,,Racing Incident,F1 Ferrari earned corner per rules — 50/50.,50
-Blocking / Weaving,1oyb4m4,Was this my fault? I'm don't know that much of the nascar rule book...,,Defender Fault,NASCAR rejoin/block — unsafe after throttle blip.,85
-Blocking / Weaving,1puxltv,Am I just an idiot?,,Defender Fault,NASCAR block attempt — consecutive moves illegal even in plate racing.,90
-Racing Incident / 50-50,1hb24wq,Who's at fault?,,Racing Incident,NASCAR contact — acceptable bump-draft style.,0
-Punt / Rear-end under braking,1pcesup,Who caused this NASCAR wreck at Nurburgring,,Following Driver Fault,NASCAR Nurburgring wreck — POV steered into inside car.,90
-Racing Incident / 50-50,1pg2kod,"Who's at fault? 88, 61, 58, or racing incident?",,Racing Incident,NASCAR old-school racing — incident part of pack chaos.,0
-Blocking / Weaving,1hn6n5u,"The 18 went off on me and said it was my fault, was it?",,Defender Fault,NASCAR block views mixed but IRacing rules stricter than IRL.,80
-Punt / Rear-end under braking,1o8r5fv,Who's at fault for the wreck here? Black car or Orange Car?,,Following Driver Fault,NASCAR Heat wreck — black car rear-ended orange.,90
-Intentional wreck / Revenge,1b5m26r,Intentional for the win or racing incident?,,Intentional Wrecking,NASCAR Heat intentional — against iRacing rules.,100
-Racing Incident / 50-50,1jdhqc9,Who's at fault? We were within a second of each other for the...,,Racing Incident,NASCAR close racing — within 1s acceptable contact.,0
-Blocking / Weaving,1m7v03h,Who's at fault I'm the 9,,Defender Fault,NASCAR block — fault on defender for excessive moves.,85
+Divebomb / Late lunge,1nbdmcl,(F1 25) Pretty clear who's at fault,F1,Overtaker Fault,F1 25 late lunge with insufficient overlap at turn-in.,90
+Racing Incident / 50-50,1odcyix,"Who is at fault and what penalty should it Be?",F1,Racing Incident,F1 wheel-to-wheel contact — shared responsibility under F1 guidelines.,50
+Divebomb / Late lunge,1p4ihnb,Who is at fault?,F1,Overtaker Fault,Textbook F1 divebomb — green car at fault for aggressive move.,95
+Racing Incident / 50-50,1p3cd50,F1 25 League racing incident,F1,Racing Incident,F1 25 league incident — both at fault per F1 rules.,50
+Side-by-side contact,1pij4bf,Can you tell me who's at fault here,F1,Shared Fault,F1 side contact — Merc squeezed but both contributed.,60
+Divebomb / Late lunge,1n9467v,Who is at fault F1 25,F1,Overtaker Fault,F1 25 dive with low overlap — overtaker primary fault.,90
+Side-by-side contact,1ofq2m2,Who is at fault? F1 25 1V1 against my friend.,F1,Racing Incident,F1 25 1v1 minor contact — racing incident.,0
+Side-by-side contact,1po608j,Miami f1 25 who's in the wrong,F1,Shared Fault,F1 25 Miami — both failed to acknowledge yellow - divebomb from far back.,70
+Divebomb / Late lunge,1oi6xsk,Divebomb or racing incident?,F1,Overtaker Fault,F1 divebomb — POV at fault per F1 rules (inside car earned apex).,90
+Racing Incident / 50-50,1ptxnlo,Who is at fault here ?,F1,Racing Incident,F1 Ferrari earned corner per rules — 50/50.,50
+Blocking / Weaving,1oyb4m4,Was this my fault? I'm don't know that much of the nascar rule book.,NASCAR,Defender Fault,NASCAR rejoin/block — unsafe after throttle blip.,85
+Blocking / Weaving,1puxltv,Am I just an idiot?,NASCAR,Defender Fault,NASCAR block attempt — consecutive moves illegal even in plate racing.,90
+Racing Incident / 50-50,1hb24wq,Who's at fault?,NASCAR,Racing Incident,NASCAR contact — acceptable bump-draft style.,0
+Punt / Rear-end under braking,1pcesup,Who caused this NASCAR wreck at Nurburgring,NASCAR,Following Driver Fault,NASCAR Nurburgring wreck — POV steered into inside car.,90
+Racing Incident / 50-50,1pg2kod,"Who's at fault? 88, 61, 58, or racing incident?",NASCAR,Racing Incident,NASCAR old-school racing — incident part of pack chaos.,0
+Blocking / Weaving,1hn6n5u,"The 18 went off on me and said it was my fault, was it?",NASCAR,Defender Fault,NASCAR block views mixed but IRacing rules stricter than IRL.,80
+Punt / Rear-end under braking,1o8r5fv,Who's at fault for the wreck here? Black car or Orange Car?,NASCAR,Following Driver Fault,NASCAR Heat wreck — black car rear-ended orange.,90
+Intentional wreck / Revenge,1b5m26r,Intentional for the win or racing incident?,NASCAR,Intentional Wrecking,NASCAR Heat intentional — against iRacing rules.,100
+Racing Incident / 50-50,1jdhqc9,Who's at fault? We were within a second of each other for the lead,NASCAR,Racing Incident,NASCAR close racing — within 1s acceptable contact.,0
+Blocking / Weaving,1m7v03h,Who's at fault I'm the 9,NASCAR,Defender Fault,NASCAR block — fault on defender for excessive moves.,85
