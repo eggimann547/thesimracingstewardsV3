@@ -1,7 +1,7 @@
 incident_type,thread_id,title,youtube_url,ruling,reason,fault_a
 Unsafe rejoin,u9rwqa,Unsafe re-entry ruins someone's race :(,,Rejoin Fault,Drivers on the racing surface have the right-of-way. You must wait for a clear gap before re-entering.,100
 Unsafe rejoin,18vneqo,Is this unsafe rejoin reportable?,,Rejoin Fault,Hold your brakes and join safely when traffic has passed. Don't try to jump back into the race immediately,100
-Divebomb / Late lunge,1ix851f,It was definitely a lunge but I’m unsure if it was illegal or not,,Overtaker Fault,The car ahead was already turning in, and you had no significant overlap. At that point they have no obligation to leave you space.,90
+Divebomb / Late lunge,1ix851f,It was definitely a lunge but I’m unsure if it was illegal or not,Overtaker Fault,The car ahead was already turning in, and you had no significant overlap. At that point they have no obligation to leave you space.,90
 Punt / Rear-end under braking,1hr86v2,I Am The White Acura That Get's Punted,,Overtaker Fault,Failed to brake in time or leave sufficient gap under braking.,90
 Crowd-strike / Accordion effect,1pf9k5f,Is anyone to blame for this? was it preventable?,,Following Driver Fault,Did not anticipate braking chain reaction in a pack and rear-ended the car ahead.,95
 Brake check / Brake test,1g5unky,2 Incidents on the same race, both guys said I brake tested them,,Lead Driver Fault,Abrupt and unnecessary heavy braking with a car close behind to cause contact—classic brake check.,100
@@ -73,3 +73,33 @@ Netcode / Lag / Teleport,1lbkv6z,Who's at fault? I'm the blue on the inside,,Rac
 Netcode / Lag / Teleport,1dj4v0v,Who is at fault? last lap pretty far down the order. I though the initial ...,,No Fault,Initial contact was netcode — no driver fault.,0
 Netcode / Lag / Teleport,1prpqps,Netcode? Williams fault? Just an inchident?,,No Fault,Netcode issue, not Williams or driver fault.,0
 Netcode / Lag / Teleport,1kt3x48,Who's at fault here? I'm the gray car.,,No Fault,Netcode incident — white car left space but desync caused contact.,0
+Vortex of Danger,17tsq7j,Did I enter the vortex of danger, or could he have left more room?,,Overtaker Fault,Entered the lead car's blind spot (vortex) without sufficient overlap.,90
+Vortex of Danger,1bwu4db,Both drivers think they are to blame. Vortex of danger or not leaving the space?!,,Overtaker Fault,Dove into vortex without full commitment — lead car not obligated to check blind spot.,85
+Vortex of Danger,1bepina,One guy says "you turned into me" the other guy says "Vortex of danger",,Overtaker Fault,Positioned in vortex of danger; overtaker must avoid blind spot risks.,95
+Vortex of Danger,18zyj1l,Live laugh love the vortex of danger.,,Overtaker Fault,Classic vortex entry — passing car fault for poor positioning.,90
+Vortex of Danger,1pwxbmi,Am I at fault for being close to the vortex of danger or this guy just got karma for blocking?,,Overtaker Fault,Close to vortex but blocking contributed — primary on overtaker awareness.,85
+Vortex of Danger,1kfdih8,Vortex of danger? I am the passing car.,,Overtaker Fault,Passing car entered vortex without ensuring safe clearance.,95
+Vortex of Danger,1o1icx4,vortex of danger or left no room?,,Overtaker Fault,Vortex positioning fault — no room excuse invalid.,90
+Vortex of Danger,1nwwrk0,Good old vortex of danger,,Overtaker Fault,Straight into vortex — unaware overtaker primary fault.,95
+Vortex of Danger,1ifr0k2,Vortex of Danger, or Outright Bad GTP Driving?,,Overtaker Fault,Vortex entry in GTP — bad driving, not lead car fault.,90
+Vortex of Danger,19f08qy,Was this anyone's fault? Vortex of Danger? Racing Incident?,,Overtaker Fault,Vortex of danger with possible racing incident elements — overtaker bears most.,85
+Wrong Way / Ghosting violation,1ms9hhi,Could i have avoided the car going the wrong way? i'm the Red car,,Wrong Way,Driver spun and drove wrong way — full fault regardless of avoidance.,100
+Wrong Way / Ghosting violation,1l5gayb,Racing incident?,,Wrong Way,No fault due to ghosting inconsistency, but wrong direction contributed.,100
+Wrong Way / Ghosting violation,1htbyia,Is this a legitimate "Unsafe Re-join" by the number 16 white car?,,Wrong Way,Accelerating wrong way after spin — protestable wrong way driving.,100
+Wrong Way / Ghosting violation,1mva1jj,is this my fault for not slowing down more (pov car) or the guys who went the wrong way?,,Wrong Way,Cutting across wrong direction — definition of wrong way fault.,100
+Wrong Way / Ghosting violation,1m65tp0,This battle was all over the place and it ended with the BMW going wrong way,,Wrong Way,GT7 ghosting failed; wrong way driving after spin.,100
+Wrong Way / Ghosting violation,1mg9xv3,I'm in the Ferrari and was told by the Blue Car that I this was a dirty move,,Wrong Way,Wrong way defense attempt — ghosting irrelevant.,100
+Wrong Way / Ghosting violation,1f3jq0e,I'm the Ferrari and I know this is a minor incident but I'm still curious,,Wrong Way,Minor due to ghosting in low lobbies — still wrong way fault.,100
+Wrong Way / Ghosting violation,1gertrm,Only Practise but is this protest worthy? (i wanna stop this cry baby),,Wrong Way,Driving wrong way — intentional wrecking level fault.,100
+Wrong Way / Ghosting violation,1gzh5f0,Am I at fault, Ford driver says I am! Would love some opinions on this...,,Wrong Way,Ghosting system failed but wrong way spin caused issue.,100
+Wrong Way / Ghosting violation,1lw0uop,Should have I let the Williams ahead rejoin before taking the corner,,Wrong Way,Ghosting only for starts/DCs — wrong way not excused.,100
+False Start / Jump start,17fx7tz,What's the correct action following a jump start?,,Jump Start Fault,Jump start detected — serve penalty immediately.,100
+False Start / Jump start,1i76o9i,Did I Jump start,,Jump Start Fault,Blue car jump start — clear violation.,100
+False Start / Jump start,1gg1olp,Did I jump the Start?,,Jump Start Fault,Disqualified for jump start despite reaction time claim.,100
+False Start / Jump start,1kjftdu,Be as critical as necessary. This was my worst race to date. First clip is false start,,Jump Start Fault,Merc not jump start but leaders false start — protest start.,100
+False Start / Jump start,1q1s3bm,How did nobody get black flagged for this?,,Jump Start Fault,Multiple false starts — black flag warranted.,100
+False Start / Jump start,1om5ruh,What do you guys think of this. Was it the Fords fault for jumping up the inside?,,Jump Start Fault,Ford jump start or great launch — still penalized.,100
+False Start / Jump start,1pqibr3,Should I protest?,,Jump Start Fault,Jump start black flagged — not protestable as auto-penalized.,100
+False Start / Jump start,1lo839j,Second race ever on iRacing ended in what I think is him turning in on me,,Jump Start Fault,Early turn-in like false start anticipation.,100
+False Start / Jump start,1hqqmnf,Intentionally hanging back to get a run on rolling start, which partially caused a jumpstart,,Jump Start Fault,Hanging back led to jump start violation.,100
+False Start / Jump start,1o6gp5f,Hello, who would be at fault for this particular incident?,,Jump Start Fault,Race green unclear — black car jump start.,100
