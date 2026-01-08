@@ -1,6 +1,6 @@
-The Sim Racing Stewards User Manual
+The Sim Racing Stewards V3 User Manual
 Fair. Fast. Fun. Unbiased. Community-Powered.
-thesimracingstewards.com | November 16, 2025
+thesimracingstewards.com | January 8, 2025
 
 Welcome to The Sim Racing Stewards
 The Sim Racing Stewards is your neutral, educational, and community-driven platform for analyzing sim racing incidents — without drama, without bias, with clarity.
@@ -9,7 +9,7 @@ We’re here to teach, improve, and keep racing fun.
 
 What We Do
 
-Paste a YouTube link →
+Write a short sim racing incident observation →
 Get a full steward verdict in seconds:
 Rule quote
 Fault % (Car A vs Car B)
