@@ -39,7 +39,7 @@ Move under braking,1q3852e,I got reported for 'Turning under Braking' in LFM?,,D
 Racing Incident / 50-50,1py4qo7,Blue claims snap oversteer. Racing incident or vehicular homicide?,,Racing Incident,Snap oversteer claim but contact unavoidable—no intent.,0
 Divebomb / Late lunge,1pz43y0,Who's at fault?,,Overtaker Fault,"Aggressive messaging aside, dive caused contact.",85
 Over-aggressive defense,1pgkx55,Who's at fault?,,Defender Fault,Carried too much speed defending—never making the corner.,80
-Unsafe rejoin,1q03vfb,Unsafe rejoin or intentional wreck?,,Rejoin Fault,Rejoined blindly over sloped corner—unsafe, regardless of intent.,100
+Unsafe rejoin,1q03vfb,Unsafe rejoin or intentional wreck?,,Rejoin Rejoined blindly over sloped corner—unsafe, regardless of intent.,100
 Unsafe rejoin,1i4t3x5,I'm fully admitting fault for this but just wanted to know your guys opinion,,Rejoin Fault,Spin recovery led to jerking back—unsafe rejoin.,95
 Divebomb / Late lunge,1jtxdlm,Apparently this is my fault as I shouldve gone right? I personally think he,,Overtaker Fault,Failed to leave space on aggressive move.,90
 Unsafe rejoin,1kqo86r,Im new. Whos fault? Ofc They said mine.,,Rejoin Fault,Rejoin from off-track without clear lane—common rookie issue.,100
@@ -102,3 +102,13 @@ False Start / Jump start,1pqibr3,Should I protest?,,Jump Start Fault,Jump start 
 False Start / Jump start,1lo839j,Second race ever on iRacing ended in what I think is him turning in on me,,Jump Start Fault,Early turn-in like false start anticipation.,100
 False Start / Jump start,1hqqmnf,Intentionally hanging back to get a run on rolling start, which partially caused a jumpstart,,Jump Start Fault,Hanging back led to jump start violation.,100
 False Start / Jump start,1o6gp5f,Hello, who would be at fault for this particular incident?,,Jump Start Fault,Race green unclear — black car jump start.,100
+Illegal overtake under SC/VSC/FCY,1p8l7bc,Does this count as overtaking under yellow flags?,,Illegal overtake sc,FCY prohibits passing — order frozen, overtaker fault.,100
+Illegal overtake under SC/VSC/FCY,1majqpt,Whose fault is this? I go to overtake as at the safety car,,Illegal overtake sc,No overtaking under SC — clear violation.,100
+Illegal overtake under SC/VSC/FCY,1kmo4pu,Friend told me I should have gave him back the postion. Was he right?,,Illegal overtake sc,Overtake under yellow/SC not allowed — gain must be yielded.,100
+Illegal overtake under SC/VSC/FCY,16bhi08,Is this a legal overtake?,,Illegal overtake sc,Overtaking under SC conditions — prohibited.,100
+Illegal overtake under SC/VSC/FCY,1f5seay,2 Shunts, 1 i think illegal overtake, Which ones can i report to LFM?,,Illegal overtake sc,Illegal overtake under double yellows/SC — reportable.,100
+Illegal overtake under SC/VSC/FCY,1apfykt,Legal or no?,,Illegal overtake sc,Pit entry pass under SC illegal in most rulesets.,100
+Illegal overtake under SC/VSC/FCY,1p64fzp,Was this a valid overtake?,,Illegal overtake sc,SC period overtake — not valid.,100
+Illegal overtake under SC/VSC/FCY,1ppkmy1,Was The Overtake On,,Illegal overtake sc,SC restart overtake before line — violation.,100
+Illegal overtake under SC/VSC/FCY,1p12wax,Was the Sauber overtake ok?,,Illegal overtake sc,Sauber passed under SC — illegal.,100
+Illegal overtake under SC/VSC/FCY,1pw9fik,Was this a fair overtake?,,Illegal overtake sc,SC-off overtake disputed — illegal if under conditions.,100
