@@ -162,3 +162,18 @@ Intentional wreck / Revenge,1r5s6t7,NASCAR league revenge hit,NASCAR,Intentional
 Blocking / Weaving,1s8t9u0,Oval block debate in iRacing NASCAR,NASCAR,Defender Fault,Weaving to break draft — block if excessive.,80
 Racing Incident / 50-50,1t1u2v3,NASCAR iRacing T1 pileup,NASCAR,Racing Incident,Lap 1 oval chaos — shared/no fault.,0
 Punt / Rear-end under braking,1u4v5w6,NASCAR fixed oval rear-end,NASCAR,Following Driver Fault,Failed to lift in draft — punt fault.,85
+Overtaking on inside of corner,FIA-DSG-4.1,A. Overtaking on the INSIDE of a corner,F1,Overtaker Entitled,Front axle at least alongside mirror prior to apex; controlled manner; reasonable line within limits.,0
+Overtaking on inside of corner,FIA-DSG-4.1,A. Overtaking on the INSIDE of a corner (no entitlement),F1,Overtaker Fault,Did not have front axle alongside mirror at apex; dived in uncontrolled.,100
+Overtaking on outside of corner,FIA-DSG-4.1,B. Overtaking on the OUTSIDE of a corner,F1,Overtaker Entitled,Front axle ahead of front axle at apex; controlled from entry to exit; within limits.,0
+Overtaking on outside of corner,FIA-DSG-4.1,B. Overtaking on the OUTSIDE of a corner (no entitlement),F1,Overtaker Fault,Did not have front axle ahead at apex; uncontrolled maneuver.,100
+Chicanes and S-Bends,FIA-DSG-4.1,C. Chicanes and S-Bends,F1,First Element Priority,Apply inside/outside guides per element; priority to first corner.,50
+Track limits violation,FIA-DSG-4.1,D. Track Limits,F1,Track Limits Fault,Must use track at all times; no leaving without justification; white lines part of track.,100
+Track limits violation,FIA-DSG-4.1,D. Track Limits (exceptions),F1,No Fault,Left track to avoid collision or due to loss of control; no lasting advantage.,0
+Impeding,FIA-DSG-4.1,E. Impeding,F1,Impeding Fault,Driven unnecessarily slowly or erratically; potentially dangerous manner.,100
+Giving back lasting advantage,FIA-DSG-4.1,F. Giving back a lasting advantage,F1,Advantage Fault,Left track and rejoined with advantage; must give back position.,100
+Moving on the Straight,FIA-DSG-4.1,G. Moving on the Straight,F1,Blocking Fault,More than one change of direction to defend; crowded beyond track edge.,100
+Moving under Braking,FIA-DSG-4.1,H. Moving under Braking,F1,Moving Under Braking Fault,Changed direction after deceleration phase commenced; not following racing line.,100
+Re-joining the Track,FIA-DSG-4.1,I. Re-joining the Track,F1,Unsafe Rejoin Fault,Maintained racing speeds in run-off; forced on-track cars to change speed/line.,100
+Safety Car Violation,FIA-DSG-4.1,J. Safety Car,F1,Erratic Driving Fault,Erratic acceleration/braking or maneuvers before restart; endangered others.,100
+Overtaking on inside of corner,FIA-DSG-4.1,A. Overtaking on the INSIDE of a corner (optimistic),F1,Overtaker Fault,Maneuver was late/optimistic; could not complete on track.,100
+Track limits violation,FIA-DSG-4.1,D. Track Limits (sprint/race strikes),F1,Track Limits Fault,Exceeded limits without exception; three strikes before flag/penalty.,10023.2sExpert
