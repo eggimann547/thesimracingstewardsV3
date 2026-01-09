@@ -1,10 +1,10 @@
 // pages/api/analyze-intranet.js
-// Version: 2.8.1 — Fixed 400 Bad Request (Sanitization + Logging)
+// Version: 2.8.2 — Added Verdict Counter (Option 1: Local JSON File)
 // January 09, 2026
 
 import { z } from 'zod';
 import Papa from 'papaparse';
-import fs from 'fs';
+import fs from 'fs/promises';
 import path from 'path';
 
 const schema = z.object({
@@ -18,13 +18,30 @@ const schema = z.object({
   manualTitle: z.string().optional().default("")
 });
 
+const countFile = path.join(process.cwd(), 'data', 'verdict-count.json');
+
+async function getAndIncrementCount() {
+  try {
+    const data = await fs.readFile(countFile, 'utf-8');
+    const json = JSON.parse(data);
+    json.totalVerdicts = (json.totalVerdicts || 0) + 1;
+    json.lastUpdated = new Date().toISOString();
+    await fs.writeFile(countFile, JSON.stringify(json, null, 2));
+    return json.totalVerdicts;
+  } catch (err) {
+    // File doesn't exist → initialize
+    const initial = { totalVerdicts: 1, lastUpdated: new Date().toISOString() };
+    await fs.writeFile(countFile, JSON.stringify(initial, null, 2));
+    return 1;
+  }
+}
+
 async function fetchWithRetry(url, options = {}, retries = 3) {
   for (let i = 0; i < retries; i++) {
     try {
       const res = await fetch(url, { ...options });
       if (res.ok) return res;
 
-      // Log full error response on failure
       const errorText = await res.text().catch(() => "No response body");
       console.error(`Grok API failed (attempt ${i+1}/${retries}): ${res.status} - ${errorText}`);
 
@@ -36,7 +53,6 @@ async function fetchWithRetry(url, options = {}, retries = 3) {
   }
 }
 
-// Simple Fisher-Yates shuffle
 function shuffleArray(array) {
   for (let i = array.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
@@ -118,7 +134,6 @@ export default async function handler(req, res) {
 
       let matches = parsed.filter(row => row.incident_type === userType);
 
-      // SERIES FILTERING: Only strict for F1 and NASCAR
       const isSpecialSeries = series.includes("F1") || series.includes("NASCAR");
       if (isSpecialSeries) {
         const targetSeries = series.includes("F1") ? "F1" : "NASCAR";
@@ -128,7 +143,6 @@ export default async function handler(req, res) {
         }
       }
 
-      // Shuffle and take up to 5
       matches = shuffleArray(matches).slice(0, 5);
 
       precedentCases = matches.map(m => ({
@@ -148,7 +162,7 @@ export default async function handler(req, res) {
       console.warn("Curated precedents failed:", e.message);
     }
 
-    // 4. Fault % — average from filtered precedents
+    // 4. Fault %
     let finalFaultA = 60;
     if (overrideFaultA !== null) {
       finalFaultA = Math.round(overrideFaultA);
@@ -159,7 +173,7 @@ export default async function handler(req, res) {
     }
     finalFaultA = Math.min(98, Math.max(2, finalFaultA));
 
-    // 5. Pro Tip (unchanged)
+    // 5. Pro Tip
     let proTip = "";
     try {
       const tipPath = path.join(process.cwd(), 'public', 'tips2.txt');
@@ -221,11 +235,11 @@ export default async function handler(req, res) {
     const carBIdentifier = carB ? ` (${carB.trim()})` : "";
     const carIdentification = `Car A${carAIdentifier} is ${carARole}. Car B${carBIdentifier} is ${carBRole}.`;
 
-    // 7. Grok verdict — with sanitization
+    // 7. Grok verdict
     const safeNotes = stewardNotes
-      .replace(/"/g, '\\"')      // Escape quotes
-      .replace(/\n/g, '\\n')     // Escape newlines
-      .replace(/\r/g, '')        // Remove carriage returns
+      .replace(/"/g, '\\"')
+      .replace(/\n/g, '\\n')
+      .replace(/\r/g, '')
       .trim();
     const humanContext = safeNotes ? `HUMAN STEWARD OBSERVATIONS:\n"${safeNotes}"\n\n` : "";
 
@@ -252,13 +266,13 @@ Return ONLY valid JSON:
   "confidence": "${confidence}"
 }`;
 
-    // Log payload for debugging (truncated)
     const payload = {
       model: 'grok-3',
       messages: [{ role: 'user', content: prompt }],
       max_tokens: 700,
       temperature: 0.7
     };
+
     console.log("Sending to Grok API (payload preview):", JSON.stringify(payload, null, 2).substring(0, 2000) + "...");
 
     const grokRes = await fetchWithRetry('https://api.x.ai/v1/chat/completions', {
@@ -274,10 +288,10 @@ Return ONLY valid JSON:
     clearTimeout(timeout);
     const data = await grokRes.json();
 
-    // Log full response if error
     if (!grokRes.ok) {
-      console.error("Grok API error response:", JSON.stringify(data));
-      throw new Error(`Grok API returned ${grokRes.status}: ${JSON.stringify(data)}`);
+      const errorText = JSON.stringify(data);
+      console.error("Grok API error response:", errorText);
+      throw new Error(`Grok API returned ${grokRes.status}: ${errorText}`);
     }
 
     const raw = data.choices?.[0]?.message?.content?.trim() || '';
@@ -295,10 +309,14 @@ Return ONLY valid JSON:
 
     verdict.video_title = effectiveTitle;
 
+    // NEW: Increment and get total verdicts count
+    const totalVerdicts = await getAndIncrementCount();
+
     res.status(200).json({
       verdict,
       precedents: precedentCases,
-      matches: []
+      matches: [],
+      totalVerdictsIssued: totalVerdicts  // ← NEW: For frontend display
     });
 
   } catch (err) {
@@ -307,7 +325,8 @@ Return ONLY valid JSON:
     res.status(500).json({
       verdict: { rule: "Error", fault: { "Car A": "—", "Car B": "—" }, explanation: "Something went wrong.", pro_tip: "", confidence: "N/A" },
       precedents: [],
-      matches: []
+      matches: [],
+      totalVerdictsIssued: 0
     });
   }
 }
