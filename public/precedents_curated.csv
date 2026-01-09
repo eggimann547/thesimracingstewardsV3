@@ -182,8 +182,31 @@ Track Limits Abuse in Monaco / Tight Corners,1q2f8k9,Repeated track limits in Mo
 First Lap Formation Lap Violation,1kjftdu,Formation lap jump start in F1 league,F1,Overtaker Fault,Jumped start during formation lap — clear violation,100
 Pit Lane Speeding / Unsafe Release,1q7301o,Pit lane unsafe release in F1,F1,Offender Fault,Released into path of oncoming car — pit lane fault,95
 Undercut / Overcut Gone Wrong,1oi6xsk,Undercut attempt caused contact,F1,Shared Fault,Pit strategy undercut led to mid-corner contact — both at fault,50
+
+DRS Zone Overtake Gone Wrong,1p4ihnb,DRS dive gone bad in F1 25,F1,Overtaker Fault,DRS boosted closing speed — no overlap at braking point per F1 regs,90
+Track Limits Abuse in Monaco / Tight Corners,1q2f8k9,Repeated track limits strikes in Monaco,F1,Driver Fault,Four wheels over white line in Monaco — automatic time penalty,100
+First Lap Formation Lap Violation,1kjftdu,Formation lap jump start in F1 league,F1,Overtaker Fault,Jumped during formation lap — clear F1 start violation,100
+Pit Lane Speeding / Unsafe Release,1q7301o,Pit lane unsafe release in F1,F1,Offender Fault,Released into path of oncoming car — F1 pit lane fault,95
+Undercut / Overcut Gone Wrong,1oi6xsk,Undercut attempt caused contact in F1,F1,Shared Fault,Pit strategy undercut led to mid-corner contact — both at fault,50
+DRS Zone Overtake Gone Wrong,1nbdmcl,DRS lunge failed in F1 25,F1,Overtaker Fault,Late DRS dive with low overlap — F1 strict apex rule,90
+Track Limits Abuse in Monaco / Tight Corners,1pij4bf,Miami track limits breach in F1 25,F1,Driver Fault,Repeated track limits in Miami — F1 penalty zone,100
+Pit Lane Speeding / Unsafe Release,1ofq2m2,Pit lane contact in F1 25 1v1,F1,Offender Fault,Unsafe pit release — F1 pit lane priority violation,95
+Undercut / Overcut Gone Wrong,1po608j,Overcut gone wrong in F1 Miami,F1,Shared Fault,Overcut attempt caused contact — both drivers misjudged,50
+First Lap Formation Lap Violation,1ptxnlo,Formation lap issue in F1 league,F1,Overtaker Fault,Formation lap positioning fault — F1 strict start procedure,100
+
 Wall Ride / Rebound into Traffic,1pcesup,Wall ride rebound wreck at Talladega,NASCAR,Following Driver Fault,Hit wall rebounded across lane — avoidable by awareness,85
 Bump and Run / Rubbin' is Racin',1hn6n5u,Bump and run move in plate race,NASCAR,Racing Incident,Light contact to pass — acceptable in NASCAR pack racing,0
 Drafting / Aero Push Gone Wrong,1o8r5fv,Aero push spin in superspeedway,NASCAR,Following Driver Fault,Draft push caused spin — NASCAR allows but risky,70
 Pack Racing Chaos / Big One,1pg2kod,Big One at Daytona pack racing,NASCAR,Racing Incident,Multi-car chaos — no single fault in NASCAR superspeedway,0
 Three-Wide / Four-Wide Incident,1m7v03h,Three-wide squeeze in Daytona,NASCAR,Shared Fault,Three-wide acceptable but squeeze led to contact — shared,50
+
+Wall Ride / Rebound into Traffic,1pcesup,Wall ride rebound wreck at Talladega,NASCAR,Following Driver Fault,Hit wall, rebounded across lane — avoidable by NASCAR awareness,85
+Bump and Run / Rubbin' is Racin',1hn6n5u,Bump and run move in plate race,NASCAR,Racing Incident,Light contact to pass — acceptable in NASCAR pack racing,0
+Drafting / Aero Push Gone Wrong,1o8r5fv,Aero push spin in superspeedway,NASCAR,Following Driver Fault,Draft push caused spin — NASCAR allows but risky,70
+Pack Racing Chaos / Big One,1pg2kod,Big One at Daytona pack racing,NASCAR,Racing Incident,Multi-car chaos — no single fault in NASCAR superspeedway,0
+Three-Wide / Four-Wide Incident,1m7v03h,Three-wide squeeze in Daytona,NASCAR,Shared Fault,Three-wide acceptable but squeeze led to contact — shared,50
+Wall Ride / Rebound into Traffic,1q2f8k9,Wall ride gone wrong in NASCAR Heat,NASCAR,Following Driver Fault,Rebound from wall into traffic — NASCAR wall-riding risk,80
+Bump and Run / Rubbin' is Racin',1puxltv,Bump and run in Talladega,NASCAR,Racing Incident,Rubbin' is racin' — intentional but within NASCAR tolerance,0
+Drafting / Aero Push Gone Wrong,1pcesup,Aero push wreck in NASCAR superspeedway,NASCAR,Following Driver Fault,Push caused spin — common NASCAR drafting incident,75
+Pack Racing Chaos / Big One,1hb24wq,Big One at Daytona,NASCAR,Racing Incident,Pack chaos — typical NASCAR multi-car wreck,0
+Three-Wide / Four-Wide Incident,1jdhqc9,Four-wide squeeze in NASCAR plate race,NASCAR,Shared Fault,Four-wide racing — contact shared in NASCAR style,50
