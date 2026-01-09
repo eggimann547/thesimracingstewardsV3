@@ -8,7 +8,6 @@ export default function Home() {
   const [carA, setCarA] = useState('');
   const [carB, setCarB] = useState('');
   const [stewardNotes, setStewardNotes] = useState('');
-  const [manualTitle, setManualTitle] = useState('');
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
   const [error, setError] = useState('');
@@ -29,7 +28,6 @@ export default function Home() {
           carA: carA.trim(),
           carB: carB.trim(),
           stewardNotes,
-          manualTitle: manualTitle.trim() || undefined,
         }),
       });
 
@@ -71,20 +69,9 @@ export default function Home() {
           Professional • Neutral • Precedent-backed • v2.0
         </p>
 
-        {/* FORM */}
+        {/* FORM – Cleaner, no Manual Title */}
         <form onSubmit={handleSubmit} className="bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-xl mb-12">
           <div className="grid gap-6">
-            <div>
-              <label className="block text-sm font-medium mb-2">Manual Title (optional)</label>
-              <input
-                type="text"
-                value={manualTitle}
-                onChange={(e) => setManualTitle(e.target.value)}
-                placeholder="e.g. Vortex of Danger at T1"
-                className="w-full p-4 border rounded-xl dark:bg-gray-700 dark:border-gray-600"
-              />
-            </div>
-
             <div>
               <label className="block text-sm font-medium mb-2">Series / Game *</label>
               <select
@@ -125,7 +112,6 @@ export default function Home() {
                   <option>Vortex of Danger</option>
                   <option>Netcode / Lag / Teleport</option>
                   <option>Used as a barrier / Squeeze</option>
-                  <option>Misjudged Distance</option>
                   <option>Pit-lane incident</option>
                   <option>Start-line chaos / T1 pile-up</option>
                   <option>Intentional wreck / Revenge</option>
