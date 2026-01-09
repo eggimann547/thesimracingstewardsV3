@@ -109,13 +109,8 @@ export default function Home() {
 
             <div>
               <label className="block text-sm font-medium mb-2">Incident Type *</label>
-              <select
-                value={incidentType}
-                onChange={(e) => setIncidentType(e.target.value)}
-                required
-                className="w-full p-5 border-2 border-gray-300 dark:border-gray-600 rounded-xl focus:ring-4 focus:ring-blue-500 text-lg bg-white dark:bg-gray-800"
-              >
-                <option value="">— Choose incident type —</option>
+              <select ...>
+              <option value="">— Choose incident type —</option>
                 <option>Divebomb / Late lunge</option>
                 <option>Weave / Block / Defending move</option>
                 <option>Unsafe rejoin</option>
@@ -142,6 +137,20 @@ export default function Home() {
                 <option>Track rejoin blocking racing line</option>
                 <option>Unsportsmanlike conduct / Chat abuse</option>
                 <option>Wrong way / Ghosting violation</option>
+  
+                {/* New NASCAR-specific */}
+                <option>Wall Ride / Rebound into Traffic</option>
+               <option>Bump and Run / Rubbin' is Racin'</option>
+                <option>Drafting / Aero Push Gone Wrong</option>
+                <option>Pack Racing Chaos / Big One</option>
+                <option>Three-Wide / Four-Wide Incident</option>
+  
+                {/* New F1-specific */}
+                <option>DRS Zone Overtake Gone Wrong</option>
+                <option>Track Limits Abuse in Monaco / Tight Corners</option>
+                <option>First Lap Formation Lap Violation</option>
+                <option>Pit Lane Speeding / Unsafe Release</option>
+                <option>Undercut / Overcut Gone Wrong</option>
               </select>
             </div>
 
