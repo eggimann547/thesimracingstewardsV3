@@ -116,47 +116,54 @@ export default function Home() {
                 className="w-full p-5 border-2 border-gray-300 dark:border-gray-600 rounded-xl focus:ring-4 focus:ring-blue-500 text-lg bg-white dark:bg-gray-800"
               >
                 <option value="">— Choose incident type —</option>
-                {/* Core / General Types */}
-                <option>Divebomb / Late lunge</option>
-                <option>Weave / Block / Defending move</option>
-                <option>Unsafe rejoin</option>
-                <option>Vortex of Danger</option>
-                <option>Netcode / Lag / Teleport</option>
-                <option>Used as a barrier / Squeeze</option>
-                <option>Pit-lane incident</option>
-                <option>Start-line chaos / T1 pile-up</option>
-                <option>Intentional wreck / Revenge</option>
-                <option>Racing incident (no fault)</option>
-                <option>Crowd-strike / Accordion effect</option>
-                <option>Blocking while being lapped</option>
-                <option>Blue-flag violation / Ignoring blue flags</option>
-                <option>Brake test</option>
-                <option>Brake check</option>
-                <option>Cutting the track / Track limits abuse</option>
-                <option>False start / Jump start</option>
-                <option>Illegal overtake under SC/VSC/FCY</option>
-                <option>Move under braking</option>
-                <option>Over-aggressive defense (2+ moves)</option>
-                <option>Punt / Rear-end under braking</option>
-                <option>Re-entry after off-track (gaining advantage)</option>
-                <option>Side-by-side contact mid-corner</option>
-                <option>Track rejoin blocking racing line</option>
-                <option>Unsportsmanlike conduct / Chat abuse</option>
-                <option>Wrong way / Ghosting violation</option>
 
-                {/* NASCAR-Specific */}
-                <option>Wall Ride / Rebound into Traffic</option>
-                <option>Bump and Run / Rubbin' is Racin'</option>
-                <option>Drafting / Aero Push Gone Wrong</option>
-                <option>Pack Racing Chaos / Big One</option>
-                <option>Three-Wide / Four-Wide Incident</option>
+                {/* General Sim Racing Types */}
+                <optgroup label="General Sim Racing Types">
+                  <option>Divebomb / Late lunge</option>
+                  <option>Weave / Block / Defending move</option>
+                  <option>Unsafe rejoin</option>
+                  <option>Vortex of Danger</option>
+                  <option>Netcode / Lag / Teleport</option>
+                  <option>Used as a barrier / Squeeze</option>
+                  <option>Pit-lane incident</option>
+                  <option>Start-line chaos / T1 pile-up</option>
+                  <option>Intentional wreck / Revenge</option>
+                  <option>Racing incident (no fault)</option>
+                  <option>Crowd-strike / Accordion effect</option>
+                  <option>Blocking while being lapped</option>
+                  <option>Blue-flag violation / Ignoring blue flags</option>
+                  <option>Brake test</option>
+                  <option>Brake check</option>
+                  <option>Cutting the track / Track limits abuse</option>
+                  <option>False start / Jump start</option>
+                  <option>Illegal overtake under SC/VSC/FCY</option>
+                  <option>Move under braking</option>
+                  <option>Over-aggressive defense (2+ moves)</option>
+                  <option>Punt / Rear-end under braking</option>
+                  <option>Re-entry after off-track (gaining advantage)</option>
+                  <option>Side-by-side contact mid-corner</option>
+                  <option>Track rejoin blocking racing line</option>
+                  <option>Unsportsmanlike conduct / Chat abuse</option>
+                  <option>Wrong way / Ghosting violation</option>
+                </optgroup>
 
                 {/* F1-Specific */}
-                <option>DRS Zone Overtake Gone Wrong</option>
-                <option>Track Limits Abuse in Monaco / Tight Corners</option>
-                <option>First Lap Formation Lap Violation</option>
-                <option>Pit Lane Speeding / Unsafe Release</option>
-                <option>Undercut / Overcut Gone Wrong</option>
+                <optgroup label="F1-Specific Incidents">
+                  <option>DRS Zone Overtake Gone Wrong</option>
+                  <option>Track Limits Abuse in Monaco / Tight Corners</option>
+                  <option>First Lap Formation Lap Violation</option>
+                  <option>Pit Lane Speeding / Unsafe Release</option>
+                  <option>Undercut / Overcut Gone Wrong</option>
+                </optgroup>
+
+                {/* NASCAR-Specific */}
+                <optgroup label="NASCAR-Specific Incidents">
+                  <option>Wall Ride / Rebound into Traffic</option>
+                  <option>Bump and Run / Rubbin' is Racin'</option>
+                  <option>Drafting / Aero Push Gone Wrong</option>
+                  <option>Pack Racing Chaos / Big One</option>
+                  <option>Three-Wide / Four-Wide Incident</option>
+                </optgroup>
               </select>
             </div>
 
