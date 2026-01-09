@@ -177,13 +177,11 @@ Re-joining the Track,FIA-DSG-4.1,I. Re-joining the Track,F1,Unsafe Rejoin Fault,
 Safety Car Violation,FIA-DSG-4.1,J. Safety Car,F1,Erratic Driving Fault,Erratic acceleration/braking or maneuvers before restart; endangered others.,100
 Overtaking on inside of corner,FIA-DSG-4.1,A. Overtaking on the INSIDE of a corner (optimistic),F1,Overtaker Fault,Maneuver was late/optimistic; could not complete on track.,100
 Track limits violation,FIA-DSG-4.1,D. Track Limits (sprint/race strikes),F1,Track Limits Fault,Exceeded limits without exception; three strikes before flag/penalty.,10023.2sExpert
-
 DRS Zone Overtake Gone Wrong,1p4ihnb,DRS dive gone bad in F1 25,F1,Overtaker Fault,DRS amplified closing speed — no overlap at braking point,90
 Track Limits Abuse in Monaco / Tight Corners,1q2f8k9,Repeated track limits in Monaco,F1,Driver Fault,Four wheels over white line in Monaco — time penalty,100
 First Lap Formation Lap Violation,1kjftdu,Formation lap jump start in F1 league,F1,Overtaker Fault,Jumped start during formation lap — clear violation,100
 Pit Lane Speeding / Unsafe Release,1q7301o,Pit lane unsafe release in F1,F1,Offender Fault,Released into path of oncoming car — pit lane fault,95
 Undercut / Overcut Gone Wrong,1oi6xsk,Undercut attempt caused contact,F1,Shared Fault,Pit strategy undercut led to mid-corner contact — both at fault,50
-
 Wall Ride / Rebound into Traffic,1pcesup,Wall ride rebound wreck at Talladega,NASCAR,Following Driver Fault,Hit wall, rebounded across lane — avoidable by awareness,85
 Bump and Run / Rubbin' is Racin',1hn6n5u,Bump and run move in plate race,NASCAR,Racing Incident,Light contact to pass — acceptable in NASCAR pack racing,0
 Drafting / Aero Push Gone Wrong,1o8r5fv,Aero push spin in superspeedway,NASCAR,Following Driver Fault,Draft push caused spin — NASCAR allows but risky,70
