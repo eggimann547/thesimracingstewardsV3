@@ -1,6 +1,6 @@
 // pages/api/analyze-intranet.js
-// Version: 2.8.0 — Series-Aware Precedents (F1/NASCAR Isolated)
-// January 08, 2026
+// Version: 2.8.1 — Fixed 400 Bad Request (Sanitization + Logging)
+// January 09, 2026
 
 import { z } from 'zod';
 import Papa from 'papaparse';
@@ -10,7 +10,7 @@ import path from 'path';
 const schema = z.object({
   url: z.string().optional().default(""),
   incidentType: z.string().min(1, "Please select an incident type"),
-  series: z.string().optional().default(""), // ← NEW: From frontend dropdown
+  series: z.string().optional().default(""),
   carA: z.string().optional().default(""),
   carB: z.string().optional().default(""),
   stewardNotes: z.string().optional().default(""),
@@ -23,7 +23,12 @@ async function fetchWithRetry(url, options = {}, retries = 3) {
     try {
       const res = await fetch(url, { ...options });
       if (res.ok) return res;
-      if (i === retries - 1) throw new Error(`Fetch failed: ${res.status}`);
+
+      // Log full error response on failure
+      const errorText = await res.text().catch(() => "No response body");
+      console.error(`Grok API failed (attempt ${i+1}/${retries}): ${res.status} - ${errorText}`);
+
+      if (i === retries - 1) throw new Error(`Fetch failed: ${res.status} - ${errorText}`);
       await new Promise(r => setTimeout(r, 1000 * (i + 1)));
     } catch (e) {
       if (i === retries - 1) throw e;
@@ -50,7 +55,7 @@ export default async function handler(req, res) {
     const {
       url = "",
       incidentType: userType,
-      series = "", // ← NEW
+      series = "",
       carA = "",
       carB = "",
       stewardNotes = "",
@@ -119,13 +124,11 @@ export default async function handler(req, res) {
         const targetSeries = series.includes("F1") ? "F1" : "NASCAR";
         const seriesMatches = matches.filter(row => (row.series || "").trim() === targetSeries);
         if (seriesMatches.length > 0) {
-          matches = seriesMatches; // Use only F1/NASCAR precedents
+          matches = seriesMatches;
         }
-        // If no exact matches, fall back to general (rare)
       }
-      // For all other series (iRacing, ACC, GT7, etc.) → use full pool
 
-      // Shuffle for variety, take up to 5
+      // Shuffle and take up to 5
       matches = shuffleArray(matches).slice(0, 5);
 
       precedentCases = matches.map(m => ({
@@ -136,7 +139,6 @@ export default async function handler(req, res) {
         thread: m.thread_id ? `https://old.reddit.com/r/simracingstewards/comments/${m.thread_id}/` : null
       }));
 
-      // Confidence based on matches
       if (precedentCases.length >= 4) confidence = "Very High";
       else if (precedentCases.length === 3) confidence = "High";
       else if (precedentCases.length === 2) confidence = "Medium";
@@ -219,9 +221,16 @@ export default async function handler(req, res) {
     const carBIdentifier = carB ? ` (${carB.trim()})` : "";
     const carIdentification = `Car A${carAIdentifier} is ${carARole}. Car B${carBIdentifier} is ${carBRole}.`;
 
-    // 7. Grok verdict — now with series context
+    // 7. Grok verdict — with sanitization
+    const safeNotes = stewardNotes
+      .replace(/"/g, '\\"')      // Escape quotes
+      .replace(/\n/g, '\\n')     // Escape newlines
+      .replace(/\r/g, '')        // Remove carriage returns
+      .trim();
+    const humanContext = safeNotes ? `HUMAN STEWARD OBSERVATIONS:\n"${safeNotes}"\n\n` : "";
+
     const seriesContext = series ? `This incident occurred in ${series}. Apply rules appropriate to that series (e.g., F1 is strict on overlap; NASCAR allows more contact in packs).` : "General sim racing rules apply.";
-    const humanContext = humanInput ? `HUMAN STEWARD OBSERVATIONS:\n"${humanInput}"\n\n` : "";
+
     const prompt = `You are a senior, neutral sim-racing steward.
 ${seriesContext}
 ${humanContext}Incident type: ${userType}
@@ -243,20 +252,34 @@ Return ONLY valid JSON:
   "confidence": "${confidence}"
 }`;
 
+    // Log payload for debugging (truncated)
+    const payload = {
+      model: 'grok-3',
+      messages: [{ role: 'user', content: prompt }],
+      max_tokens: 700,
+      temperature: 0.7
+    };
+    console.log("Sending to Grok API (payload preview):", JSON.stringify(payload, null, 2).substring(0, 2000) + "...");
+
     const grokRes = await fetchWithRetry('https://api.x.ai/v1/chat/completions', {
       method: 'POST',
-      headers: { Authorization: `Bearer ${process.env.GROK_API_KEY}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: 'grok-3',
-        messages: [{ role: 'user', content: prompt }],
-        max_tokens: 700,
-        temperature: 0.7
-      }),
+      headers: {
+        Authorization: `Bearer ${process.env.GROK_API_KEY}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(payload),
       signal: controller.signal
     });
 
     clearTimeout(timeout);
     const data = await grokRes.json();
+
+    // Log full response if error
+    if (!grokRes.ok) {
+      console.error("Grok API error response:", JSON.stringify(data));
+      throw new Error(`Grok API returned ${grokRes.status}: ${JSON.stringify(data)}`);
+    }
+
     const raw = data.choices?.[0]?.message?.content?.trim() || '';
 
     let verdict = {
@@ -280,7 +303,7 @@ Return ONLY valid JSON:
 
   } catch (err) {
     clearTimeout(timeout);
-    console.error(err);
+    console.error("API Handler Error:", err);
     res.status(500).json({
       verdict: { rule: "Error", fault: { "Car A": "—", "Car B": "—" }, explanation: "Something went wrong.", pro_tip: "", confidence: "N/A" },
       precedents: [],
