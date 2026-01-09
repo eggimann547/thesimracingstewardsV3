@@ -183,9 +183,8 @@ First Lap Formation Lap Violation,1kjftdu,Formation lap jump start in F1 league,
 Pit Lane Speeding / Unsafe Release,1q7301o,Pit lane unsafe release in F1,F1,Offender Fault,Released into path of oncoming car — pit lane fault,95
 Undercut / Overcut Gone Wrong,1oi6xsk,Undercut attempt caused contact,F1,Shared Fault,Pit strategy undercut led to mid-corner contact — both at fault,50
 
-Side-by-side contact,1pij4bf,Who's in the wrong,F1,Shared Fault,Merc squeezed inside car but both failed to give room in mid-corner battle,50
-Side-by-side contact,1ofq2m2,Who is at fault? F1 25 1V1 against my friend,F1,Racing Incident,Side-by-side contact — both held line, no predominant fault per F1 rules,0
-Side-by-side contact,1po608j,Miami f1 25 who's in the wrong (side contact version),F1,Shared Fault,Inside car turned in on overlap — shared responsibility in F1 mid-corner,50
+Side-by-side contact,1ofq2m2,Who is at fault? F1 25,F1,Racing Incident,Side-by-side contact — both held line - no predominant fault per F1 rules,0
+Side-by-side contact,1po608j,F1 25 who's in the wrong (side contact version),F1,Shared Fault,Inside car turned in on overlap — shared responsibility in F1 mid-corner,50
 Side-by-side contact,1oi6xsk,Divebomb or racing incident? (side-by-side element),F1,Overtaker Fault,Late side-by-side attempt caused contact — overtaker fault for poor timing,80
 Side-by-side contact,1ptxnlo,Who is at fault here ? (F1 side-by-side),F1,Racing Incident,Side-by-side battle in F1 — both drivers raced fairly, no fault,0
 Side-by-side contact,1nbdmcl,(F1 25) Pretty clear who's at fault, right? (side contact),F1,Overtaker Fault,Side-by-side contact — overtaker squeezed defender,85
