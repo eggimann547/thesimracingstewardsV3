@@ -141,6 +141,7 @@ export default function Home() {
                   <option>First Lap Formation Lap Violation</option>
                   <option>Pit Lane Speeding / Unsafe Release</option>
                   <option>Undercut / Overcut Gone Wrong</option>
+                  <option>Side-by-side contact</option>
                 </optgroup>
 
                 {/* NASCAR-Specific */}
