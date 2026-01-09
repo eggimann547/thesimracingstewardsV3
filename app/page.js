@@ -3,9 +3,8 @@
 import { useState } from 'react';
 
 export default function Home() {
-  const [url, setUrl] = useState('');
   const [incidentType, setIncidentType] = useState('');
-  const [series, setSeries] = useState(''); // ← NEW
+  const [series, setSeries] = useState('');
   const [carA, setCarA] = useState('');
   const [carB, setCarB] = useState('');
   const [stewardNotes, setStewardNotes] = useState('');
@@ -25,9 +24,8 @@ export default function Home() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          url,
           incidentType,
-          series, // ← NEW: Sent to backend
+          series,
           carA: carA.trim(),
           carB: carB.trim(),
           stewardNotes,
@@ -43,14 +41,6 @@ export default function Home() {
     } finally {
       setLoading(false);
     }
-  };
-
-  // Helper to extract YouTube ID
-  const getYouTubeId = (url) => {
-    if (!url) return '';
-    if (url.includes('youtu.be')) return url.split('/').pop()?.split('?')[0] || '';
-    if (url.includes('watch?v=')) return url.split('v=')[1]?.split('&')[0] || '';
-    return '';
   };
 
   return (
@@ -78,25 +68,14 @@ export default function Home() {
           Incident Verdict Tool
         </h1>
         <p className="text-center text-gray-600 dark:text-gray-300 mb-12">
-          Professional • Neutral • Precedent-backed
+          Professional • Neutral • Precedent-backed • v2.0
         </p>
 
         {/* FORM */}
         <form onSubmit={handleSubmit} className="bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-xl mb-12">
           <div className="grid gap-6">
             <div>
-              <label className="block text-sm font-medium mb-2">Video URL or Reddit Post (optional)</label>
-              <input
-                type="text"
-                value={url}
-                onChange={(e) => setUrl(e.target.value)}
-                placeholder="https://youtu.be/..."
-                className="w-full p-4 border rounded-xl dark:bg-gray-700 dark:border-gray-600"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium mb-2">Manual Title (if no video)</label>
+              <label className="block text-sm font-medium mb-2">Manual Title (optional)</label>
               <input
                 type="text"
                 value={manualTitle}
@@ -106,7 +85,6 @@ export default function Home() {
               />
             </div>
 
-            {/* NEW: Series / Game Dropdown */}
             <div>
               <label className="block text-sm font-medium mb-2">Series / Game *</label>
               <select
@@ -211,92 +189,71 @@ export default function Home() {
           </div>
         </form>
 
-        {/* Rest of your result rendering remains 100% unchanged */}
+        {/* Error display */}
         {error && (
           <div className="mt-8 p-6 bg-red-50 dark:bg-red-900/30 border border-red-300 dark:border-red-700 rounded-xl">
             <p className="text-red-800 dark:text-red-200">{error}</p>
           </div>
         )}
 
+        {/* Results section (video embed removed) */}
         {result && result.verdict && (
-          <div className="mt-12 grid grid-cols-1 lg:grid-cols-2 gap-10 xl:gap-16">
-            {url && (
-              <div className="order-2 lg:order-1">
-                <div className="sticky top-6 bg-white dark:bg-gray-800 rounded-2xl shadow-2xl overflow-hidden border border-gray-200 dark:border-gray-700">
-                  <div className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white px-6 py-3">
-                    <h3 className="text-xl font-bold">Submitted Incident Video</h3>
-                  </div>
-                  <div className="aspect-video">
-                    <iframe
-                      src={`https://www.youtube-nocookie.com/embed/${getYouTubeId(url)}`}
-                      title="Submitted Incident"
-                      className="w-full h-full"
-                      frameBorder="0"
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                      allowFullScreen
-                    ></iframe>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            <div className={`order-1 lg:order-2 ${url ? '' : 'lg:col-span-2'}`}>
-              <div className="bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 mb-10">
-                <h2 className="text-3xl font-bold mb-6 text-center text-blue-700 dark:text-blue-400">
-                  Official Verdict
-                </h2>
-                <div className="space-y-6 text-lg">
-                  <div><strong>Rule:</strong> {result.verdict.rule}</div>
-                  <div className="grid grid-cols-2 gap-6">
-                    {Object.entries(result.verdict.fault).map(([car, fault]) => (
-                      <div key={car} className="text-center p-6 bg-gray-50 dark:bg-gray-700 rounded-xl">
-                        <div className="text-2xl font-bold text-gray-900 dark:text-white">{car}</div>
-                        <div className="text-4xl font-black text-red-600 dark:text-red-400 mt-2">{fault}</div>
-                      </div>
-                    ))}
-                  </div>
-                  <div><strong>Car Roles:</strong> {result.verdict.car_identification}</div>
-                  <div className="prose prose-lg dark:prose-invert max-w-none">
-                    <p className="whitespace-pre-wrap">{result.verdict.explanation}</p>
-                  </div>
-                  <div className="mt-8 p-6 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/30 dark:to-orange-900/30 rounded-xl border border-amber-300 dark:border-amber-700">
-                    <p className="text-xl font-bold text-amber-900 dark:text-amber-200">
-                      {result.verdict.pro_tip.replace(/^TheSimRacingStewards Tip:\s*/, '').replace(/^Tip:\s*/, '')}
-                    </p>
-                  </div>
-                  <div className="text-center text-sm text-gray-500">
-                    Confidence: <span className="font-bold">{result.verdict.confidence}</span>
-                  </div>
-                </div>
-              </div>
-
-              {result.precedents && result.precedents.length > 0 && (
-                <div className="p-8 bg-gradient-to-r from-green-50 to-blue-50 dark:from-green-900/20 dark:to-blue-900/20 rounded-2xl shadow-xl border border-green-200 dark:border-green-700">
-                  <h3 className="text-2xl font-bold text-green-700 dark:text-green-300 mb-6 text-center">
-                    Precedent Cases (Real Past Incidents)
-                  </h3>
-                  {result.precedents.map((p, i) => (
-                    <div key={i} className="mb-8 p-6 bg-white dark:bg-gray-800 rounded-xl shadow border">
-                      <h4 className="text-xl font-bold mb-2">{p.title}</h4>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">
-                        <strong>Ruling:</strong> {p.ruling} | <strong>Fault A:</strong> {p.faultA}%
-                      </p>
-                      <p className="text-gray-700 dark:text-gray-300 italic mt-2">"{p.reason}"</p>
-                      {p.thread && (
-                        <a
-                          href={p.thread}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-block mt-3 text-blue-600 hover:text-blue-800 dark:text-blue-400 font-medium"
-                        >
-                          View Original Reddit Discussion →
-                        </a>
-                      )}
+          <div className="mt-12">
+            <div className={`bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 mb-10`}>
+              <h2 className="text-3xl font-bold mb-6 text-center text-blue-700 dark:text-blue-400">
+                Official Verdict
+              </h2>
+              <div className="space-y-6 text-lg">
+                <div><strong>Rule:</strong> {result.verdict.rule}</div>
+                <div className="grid grid-cols-2 gap-6">
+                  {Object.entries(result.verdict.fault).map(([car, fault]) => (
+                    <div key={car} className="text-center p-6 bg-gray-50 dark:bg-gray-700 rounded-xl">
+                      <div className="text-2xl font-bold text-gray-900 dark:text-white">{car}</div>
+                      <div className="text-4xl font-black text-red-600 dark:text-red-400 mt-2">{fault}</div>
                     </div>
                   ))}
                 </div>
-              )}
+                <div><strong>Car Roles:</strong> {result.verdict.car_identification}</div>
+                <div className="prose prose-lg dark:prose-invert max-w-none">
+                  <p className="whitespace-pre-wrap">{result.verdict.explanation}</p>
+                </div>
+                <div className="mt-8 p-6 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/30 dark:to-orange-900/30 rounded-xl border border-amber-300 dark:border-amber-700">
+                  <p className="text-xl font-bold text-amber-900 dark:text-amber-200">
+                    {result.verdict.pro_tip.replace(/^TheSimRacingStewards Tip:\s*/, '').replace(/^Tip:\s*/, '')}
+                  </p>
+                </div>
+                <div className="text-center text-sm text-gray-500">
+                  Confidence: <span className="font-bold">{result.verdict.confidence}</span>
+                </div>
+              </div>
             </div>
+
+            {result.precedents && result.precedents.length > 0 && (
+              <div className="p-8 bg-gradient-to-r from-green-50 to-blue-50 dark:from-green-900/20 dark:to-blue-900/20 rounded-2xl shadow-xl border border-green-200 dark:border-green-700">
+                <h3 className="text-2xl font-bold text-green-700 dark:text-green-300 mb-6 text-center">
+                  Precedent Cases (Real Past Incidents)
+                </h3>
+                {result.precedents.map((p, i) => (
+                  <div key={i} className="mb-8 p-6 bg-white dark:bg-gray-800 rounded-xl shadow border">
+                    <h4 className="text-xl font-bold mb-2">{p.title}</h4>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      <strong>Ruling:</strong> {p.ruling} | <strong>Fault A:</strong> {p.faultA}%
+                    </p>
+                    <p className="text-gray-700 dark:text-gray-300 italic mt-2">"{p.reason}"</p>
+                    {p.thread && (
+                      <a
+                        href={p.thread}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-block mt-3 text-blue-600 hover:text-blue-800 dark:text-blue-400 font-medium"
+                      >
+                        View Original Reddit Discussion →
+                      </a>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
       </div>
