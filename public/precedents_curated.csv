@@ -176,7 +176,7 @@ Moving under Braking,FIA-DSG-4.1,H. Moving under Braking,F1,Moving Under Braking
 Re-joining the Track,FIA-DSG-4.1,I. Re-joining the Track,F1,Unsafe Rejoin Fault,Maintained racing speeds in run-off; forced on-track cars to change speed/line.,100
 Safety Car Violation,FIA-DSG-4.1,J. Safety Car,F1,Erratic Driving Fault,Erratic acceleration/braking or maneuvers before restart; endangered others.,100
 Overtaking on inside of corner,FIA-DSG-4.1,A. Overtaking on the INSIDE of a corner (optimistic),F1,Overtaker Fault,Maneuver was late/optimistic; could not complete on track.,100
-Track limits violation,FIA-DSG-4.1,D. Track Limits (sprint/race strikes),F1,Track Limits Fault,Exceeded limits without exception; three strikes before flag/penalty.,10023.2sExpert
+Track limits violation,FIA-DSG-4.1,D. Track Limits (sprint/race strikes),F1,Track Limits Fault,Exceeded limits without exception; three strikes before flag/penalty.,100
 DRS Zone Overtake Gone Wrong,1p4ihnb,DRS dive gone bad in F1 25,F1,Overtaker Fault,DRS amplified closing speed — no overlap at braking point,90
 Track Limits Abuse in Monaco / Tight Corners,1q2f8k9,Repeated track limits in Monaco,F1,Driver Fault,Four wheels over white line in Monaco — time penalty,100
 First Lap Formation Lap Violation,1kjftdu,Formation lap jump start in F1 league,F1,Overtaker Fault,Jumped start during formation lap — clear violation,100
