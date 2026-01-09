@@ -109,8 +109,14 @@ export default function Home() {
 
             <div>
               <label className="block text-sm font-medium mb-2">Incident Type *</label>
-              <select ...>
-              <option value="">— Choose incident type —</option>
+              <select
+                value={incidentType}
+                onChange={(e) => setIncidentType(e.target.value)}
+                required
+                className="w-full p-5 border-2 border-gray-300 dark:border-gray-600 rounded-xl focus:ring-4 focus:ring-blue-500 text-lg bg-white dark:bg-gray-800"
+              >
+                <option value="">— Choose incident type —</option>
+                {/* Core / General Types */}
                 <option>Divebomb / Late lunge</option>
                 <option>Weave / Block / Defending move</option>
                 <option>Unsafe rejoin</option>
@@ -137,15 +143,15 @@ export default function Home() {
                 <option>Track rejoin blocking racing line</option>
                 <option>Unsportsmanlike conduct / Chat abuse</option>
                 <option>Wrong way / Ghosting violation</option>
-  
-                {/* New NASCAR-specific */}
+
+                {/* NASCAR-Specific */}
                 <option>Wall Ride / Rebound into Traffic</option>
-               <option>Bump and Run / Rubbin' is Racin'</option>
+                <option>Bump and Run / Rubbin' is Racin'</option>
                 <option>Drafting / Aero Push Gone Wrong</option>
                 <option>Pack Racing Chaos / Big One</option>
                 <option>Three-Wide / Four-Wide Incident</option>
-  
-                {/* New F1-specific */}
+
+                {/* F1-Specific */}
                 <option>DRS Zone Overtake Gone Wrong</option>
                 <option>Track Limits Abuse in Monaco / Tight Corners</option>
                 <option>First Lap Formation Lap Violation</option>
@@ -205,10 +211,10 @@ export default function Home() {
           </div>
         )}
 
-        {/* Results section (video embed removed) */}
+        {/* Results section */}
         {result && result.verdict && (
           <div className="mt-12">
-            <div className={`bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 mb-10`}>
+            <div className="bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 mb-10">
               <h2 className="text-3xl font-bold mb-6 text-center text-blue-700 dark:text-blue-400">
                 Official Verdict
               </h2>
