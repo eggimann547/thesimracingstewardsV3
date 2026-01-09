@@ -125,6 +125,7 @@ export default function Home() {
                   <option>Vortex of Danger</option>
                   <option>Netcode / Lag / Teleport</option>
                   <option>Used as a barrier / Squeeze</option>
+                  <option>Misjudged Distance</option>
                   <option>Pit-lane incident</option>
                   <option>Start-line chaos / T1 pile-up</option>
                   <option>Intentional wreck / Revenge</option>
