@@ -142,6 +142,7 @@ export default function Home() {
                   <option>Pit Lane Speeding / Unsafe Release</option>
                   <option>Undercut / Overcut Gone Wrong</option>
                   <option>Side-by-side contact</option>
+                  <option>Over-aggressive defense (2+ moves)</option>
                 </optgroup>
 
                 {/* NASCAR-Specific */}
