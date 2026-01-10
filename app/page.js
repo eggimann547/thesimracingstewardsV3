@@ -49,7 +49,7 @@ export default function Home() {
           <img
             src="/logo.png"
             alt="TheSimRacingStewards"
-            className="w-auto h-auto max-h-64 object-contain drop-shadow-2xl mb-6"
+            className="h-40 md:h-52 lg:h-64 w-auto object-contain drop-shadow-2xl mb-6 border-2 border-red-500"
             onError={(e) => {
               e.currentTarget.style.display = 'none';
               e.currentTarget.nextElementSibling.style.display = 'block';
