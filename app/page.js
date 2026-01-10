@@ -42,6 +42,23 @@ export default function Home() {
   };
 
   return (
+
+    <div className="min-h-screen bg-gradient-to-b from-gray-50 via-blue-50/50 to-gray-100 dark:from-gray-900 dark:via-blue-950/30 dark:to-gray-900 py-10 px-4 relative overflow-hidden">
+      {/* Subtle checkered flag background pattern */}
+      <div
+        className="absolute inset-0 opacity-[0.04] dark:opacity-[0.03] pointer-events-none"
+        style={{
+          backgroundImage: `
+            linear-gradient(45deg, rgba(0,0,0,0.5) 25%, transparent 25%), 
+            linear-gradient(-45deg, rgba(0,0,0,0.5) 25%, transparent 25%),
+            linear-gradient(45deg, transparent 75%, rgba(0,0,0,0.5) 75%),
+            linear-gradient(-45deg, transparent 75%, rgba(0,0,0,0.5) 75%)
+          `,
+          backgroundSize: '60px 60px',
+          backgroundPosition: '0 0, 30px 0, 30px -30px, 0px 30px',
+        }}
+      />
+    
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-10 px-4">
       {/* LOGO HEADER */}
       <div className="w-full bg-white dark:bg-gray-800 shadow-xl border-b-4 border-blue-600 py-8">
