@@ -66,7 +66,7 @@ export default function Home() {
           Incident Verdict Tool
         </h1>
         <p className="text-center text-gray-600 dark:text-gray-300 mb-12">
-          Professional • Neutral • Precedent-backed • v2.0
+          Professional • Neutral • Precedent-backed • v0.9
         </p>
 
         {/* FORM */}
