@@ -53,7 +53,6 @@ export default function Home() {
           className="h-40 md:h-52 lg:h-64 object-contain drop-shadow-2xl mb-6"
           />
     
-          />
           <div className="hidden text-5xl md:text-7xl font-black bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
             TheSimRacingStewards
           </div>
