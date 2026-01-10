@@ -42,11 +42,26 @@ export default function Home() {
   };
 
   return (
-    
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-10 px-4">
-      {/* LOGO HEADER */}
-      <div className="w-full bg-white dark:bg-gray-800 shadow-xl border-b-4 border-blue-600 py-8">
-        <div className="max-w-5xl mx-auto px-6 flex flex-col items-center">
+    <div className="min-h-screen bg-gradient-to-b from-gray-50 via-blue-50/50 to-gray-100 dark:from-gray-900 dark:via-blue-950/30 dark:to-gray-900 py-10 px-4 relative overflow-hidden">
+      {/* Subtle checkered flag background pattern */}
+      <div
+        className="absolute inset-0 opacity-[0.04] dark:opacity-[0.03] pointer-events-none"
+        style={{
+          backgroundImage: `
+            linear-gradient(45deg, rgba(0,0,0,0.5) 25%, transparent 25%), 
+            linear-gradient(-45deg, rgba(0,0,0,0.5) 25%, transparent 25%),
+            linear-gradient(45deg, transparent 75%, rgba(0,0,0,0.5) 75%),
+            linear-gradient(-45deg, transparent 75%, rgba(0,0,0,0.5) 75%)
+          `,
+          backgroundSize: '60px 60px',
+          backgroundPosition: '0 0, 30px 0, 30px -30px, 0px 30px',
+        }}
+      />
+
+      {/* LOGO HEADER + Accent Bar */}
+      <div className="w-full bg-white dark:bg-gray-800 shadow-xl border-b-4 border-blue-600 relative z-10">
+        <div className="w-full h-2 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600" /> {/* ← Accent bar */}
+        <div className="max-w-5xl mx-auto px-6 py-8 flex flex-col items-center">
           <img
             src="/logo2.png"
             alt="TheSimRacingStewards"
@@ -62,16 +77,16 @@ export default function Home() {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto mt-10">
+      <div className="max-w-7xl mx-auto mt-10 relative z-10">
         <h1 className="text-4xl font-bold text-center mb-2 text-gray-900 dark:text-white">
           Incident Verdict Tool
         </h1>
         <p className="text-center text-gray-600 dark:text-gray-300 mb-12">
-          Professional • Neutral • Precedent-backed • v0.9
+          Professional • Neutral • Precedent-backed • v2.0
         </p>
 
         {/* FORM */}
-        <form onSubmit={handleSubmit} className="bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-xl mb-12">
+        <form onSubmit={handleSubmit} className="bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-xl mb-12 relative z-10">
           <div className="grid gap-6">
             <div>
               <label className="block text-sm font-medium mb-2">Series / Game *</label>
@@ -105,7 +120,6 @@ export default function Home() {
               >
                 <option value="">— Choose incident type —</option>
 
-                {/* General Sim Racing Types */}
                 <optgroup label="General Sim Racing Types">
                   <option>Divebomb / Late lunge</option>
                   <option>Weave / Block / Defending move</option>
@@ -135,7 +149,6 @@ export default function Home() {
                   <option>Wrong way / Ghosting violation</option>
                 </optgroup>
 
-                {/* F1-Specific */}
                 <optgroup label="F1-Specific Incidents">
                   <option>DRS Zone Overtake Gone Wrong</option>
                   <option>Track Limits Abuse in Monaco / Tight Corners</option>
@@ -144,7 +157,6 @@ export default function Home() {
                   <option>Undercut / Overcut Gone Wrong</option>
                 </optgroup>
 
-                {/* NASCAR-Specific */}
                 <optgroup label="NASCAR-Specific Incidents">
                   <option>Wall Ride / Rebound into Traffic</option>
                   <option>Bump and Run / Rubbin' is Racin'</option>
@@ -192,7 +204,7 @@ export default function Home() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-5 bg-gradient-to-r from-blue-600 to-indigo-700 text-white text-xl font-bold rounded-xl hover:from-blue-700 hover:to-indigo-800 disabled:opacity-50 transition"
+              className="w-full py-5 bg-gradient-to-r from-blue-600 to-indigo-700 text-white text-xl font-bold rounded-xl hover:from-blue-700 hover:to-indigo-800 disabled:opacity-50 transition shadow-lg"
             >
               {loading ? 'Generating Professional Verdict...' : 'Generate Professional Verdict'}
             </button>
@@ -206,10 +218,11 @@ export default function Home() {
           </div>
         )}
 
-        {/* Results section */}
+        {/* Results section – Enhanced styling */}
         {result && result.verdict && (
-          <div className="mt-12">
-            <div className="bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 mb-10">
+          <div className="mt-12 space-y-12">
+            {/* Verdict Card */}
+            <div className="bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 transform hover:scale-[1.01] transition-transform duration-300">
               <h2 className="text-3xl font-bold mb-6 text-center text-blue-700 dark:text-blue-400">
                 Official Verdict
               </h2>
@@ -217,7 +230,7 @@ export default function Home() {
                 <div><strong>Rule:</strong> {result.verdict.rule}</div>
                 <div className="grid grid-cols-2 gap-6">
                   {Object.entries(result.verdict.fault).map(([car, fault]) => (
-                    <div key={car} className="text-center p-6 bg-gray-50 dark:bg-gray-700 rounded-xl">
+                    <div key={car} className="text-center p-6 bg-gray-50 dark:bg-gray-700 rounded-xl shadow-inner">
                       <div className="text-2xl font-bold text-gray-900 dark:text-white">{car}</div>
                       <div className="text-4xl font-black text-red-600 dark:text-red-400 mt-2">{fault}</div>
                     </div>
@@ -227,7 +240,7 @@ export default function Home() {
                 <div className="prose prose-lg dark:prose-invert max-w-none">
                   <p className="whitespace-pre-wrap">{result.verdict.explanation}</p>
                 </div>
-                <div className="mt-8 p-6 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/30 dark:to-orange-900/30 rounded-xl border border-amber-300 dark:border-amber-700">
+                <div className="mt-8 p-6 bg-gradient-to-r from-amber-50 via-amber-100 to-orange-50 dark:from-amber-950/50 dark:via-amber-900/50 dark:to-orange-950/50 rounded-xl border border-amber-300 dark:border-amber-700 shadow-inner">
                   <p className="text-xl font-bold text-amber-900 dark:text-amber-200">
                     {result.verdict.pro_tip.replace(/^TheSimRacingStewards Tip:\s*/, '').replace(/^Tip:\s*/, '')}
                   </p>
@@ -238,30 +251,33 @@ export default function Home() {
               </div>
             </div>
 
+            {/* Precedents */}
             {result.precedents && result.precedents.length > 0 && (
-              <div className="p-8 bg-gradient-to-r from-green-50 to-blue-50 dark:from-green-900/20 dark:to-blue-900/20 rounded-2xl shadow-xl border border-green-200 dark:border-green-700">
+              <div className="p-8 bg-gradient-to-br from-green-50/70 to-blue-50/70 dark:from-green-950/40 dark:to-blue-950/40 rounded-2xl shadow-xl border border-green-200/50 dark:border-green-700/50">
                 <h3 className="text-2xl font-bold text-green-700 dark:text-green-300 mb-6 text-center">
                   Precedent Cases (Real Past Incidents)
                 </h3>
-                {result.precedents.map((p, i) => (
-                  <div key={i} className="mb-8 p-6 bg-white dark:bg-gray-800 rounded-xl shadow border">
-                    <h4 className="text-xl font-bold mb-2">{p.title}</h4>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
-                      <strong>Ruling:</strong> {p.ruling} | <strong>Fault A:</strong> {p.faultA}%
-                    </p>
-                    <p className="text-gray-700 dark:text-gray-300 italic mt-2">"{p.reason}"</p>
-                    {p.thread && (
-                      <a
-                        href={p.thread}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-block mt-3 text-blue-600 hover:text-blue-800 dark:text-blue-400 font-medium"
-                      >
-                        View Original Reddit Discussion →
-                      </a>
-                    )}
-                  </div>
-                ))}
+                <div className="space-y-6">
+                  {result.precedents.map((p, i) => (
+                    <div key={i} className="p-6 bg-white dark:bg-gray-800 rounded-xl shadow-md border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-shadow">
+                      <h4 className="text-xl font-bold mb-2">{p.title}</h4>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                        <strong>Ruling:</strong> {p.ruling} | <strong>Fault A:</strong> {p.faultA}%
+                      </p>
+                      <p className="text-gray-700 dark:text-gray-300 italic mt-2">"{p.reason}"</p>
+                      {p.thread && (
+                        <a
+                          href={p.thread}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-block mt-3 text-blue-600 hover:text-blue-800 dark:text-blue-400 font-medium"
+                        >
+                          View Original Reddit Discussion →
+                        </a>
+                      )}
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
           </div>
