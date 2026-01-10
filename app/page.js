@@ -46,17 +46,20 @@ export default function Home() {
       {/* LOGO HEADER */}
       <div className="w-full bg-white dark:bg-gray-800 shadow-xl border-b-4 border-blue-600 py-8">
         <div className="max-w-5xl mx-auto px-6 flex flex-col items-center">
-
-        <div className="max-w-5xl mx-auto px-6 flex flex-col items-center">
           <img
             src="/logo.png"
             alt="TheSimRacingStewards"
-            className="h-28 md:h-36 object-contain drop-shadow-2xl mb-4"
+            className="h-40 md:h-52 lg:h-64 object-contain drop-shadow-2xl mb-6"
             onError={(e) => {
               e.currentTarget.style.display = 'none';
               e.currentTarget.nextElementSibling.style.display = 'block';
             }}
           />
+          <div className="hidden text-5xl md:text-7xl font-black bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+            TheSimRacingStewards
+          </div>
+        </div>
+      </div>
     
           <div className="hidden text-5xl md:text-7xl font-black bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
             TheSimRacingStewards
