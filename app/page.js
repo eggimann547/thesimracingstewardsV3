@@ -47,7 +47,7 @@ export default function Home() {
       <div className="w-full bg-white dark:bg-gray-800 shadow-xl border-b-4 border-blue-600 py-8">
         <div className="max-w-5xl mx-auto px-6 flex flex-col items-center">
           <img
-            src="/logo.png"
+            src="/logo2.png"
             alt="TheSimRacingStewards"
             className="h-40 md:h-52 lg:h-64 object-contain drop-shadow-2xl mb-6"
             onError={(e) => {
