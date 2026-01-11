@@ -3,6 +3,7 @@
 import { useState } from 'react';
 
 export default function Home() {
+  const [url, setUrl] = useState('');
   const [incidentType, setIncidentType] = useState('');
   const [series, setSeries] = useState('');
   const [carA, setCarA] = useState('');
@@ -23,6 +24,7 @@ export default function Home() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          url,
           incidentType,
           series,
           carA: carA.trim(),
@@ -39,6 +41,14 @@ export default function Home() {
     } finally {
       setLoading(false);
     }
+  };
+
+  // Helper to extract YouTube ID
+  const getYouTubeId = (url) => {
+    if (!url) return '';
+    if (url.includes('youtu.be')) return url.split('/').pop()?.split('?')[0] || '';
+    if (url.includes('watch?v=')) return url.split('v=')[1]?.split('&')[0] || '';
+    return '';
   };
 
   return (
@@ -60,7 +70,7 @@ export default function Home() {
 
       {/* LOGO HEADER + Accent Bar */}
       <div className="w-full bg-white dark:bg-gray-800 shadow-xl border-b-4 border-blue-600 relative z-10">
-        <div className="w-full h-2 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600" /> {/* ← Accent bar */}
+        <div className="w-full h-2 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600" /> {/* Accent bar */}
         <div className="max-w-5xl mx-auto px-6 py-8 flex flex-col items-center">
           <img
             src="/logo2.png"
@@ -88,6 +98,17 @@ export default function Home() {
         {/* FORM */}
         <form onSubmit={handleSubmit} className="bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-xl mb-12 relative z-10">
           <div className="grid gap-6">
+            <div>
+              <label className="block text-sm font-medium mb-2">Video URL or Reddit Post (optional)</label>
+              <input
+                type="text"
+                value={url}
+                onChange={(e) => setUrl(e.target.value)}
+                placeholder="https://youtu.be/... or Reddit link"
+                className="w-full p-4 border rounded-xl dark:bg-gray-700 dark:border-gray-600"
+              />
+            </div>
+
             <div>
               <label className="block text-sm font-medium mb-2">Series / Game *</label>
               <select
@@ -218,68 +239,95 @@ export default function Home() {
           </div>
         )}
 
-        {/* Results section – Enhanced styling */}
+        {/* Results section – Side-by-side layout when video is present */}
         {result && result.verdict && (
-          <div className="mt-12 space-y-12">
-            {/* Verdict Card */}
-            <div className="bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 transform hover:scale-[1.01] transition-transform duration-300">
-              <h2 className="text-3xl font-bold mb-6 text-center text-blue-700 dark:text-blue-400">
-                Official Verdict
-              </h2>
-              <div className="space-y-6 text-lg">
-                <div><strong>Rule:</strong> {result.verdict.rule}</div>
-                <div className="grid grid-cols-2 gap-6">
-                  {Object.entries(result.verdict.fault).map(([car, fault]) => (
-                    <div key={car} className="text-center p-6 bg-gray-50 dark:bg-gray-700 rounded-xl shadow-inner">
-                      <div className="text-2xl font-bold text-gray-900 dark:text-white">{car}</div>
-                      <div className="text-4xl font-black text-red-600 dark:text-red-400 mt-2">{fault}</div>
-                    </div>
-                  ))}
-                </div>
-                <div><strong>Car Roles:</strong> {result.verdict.car_identification}</div>
-                <div className="prose prose-lg dark:prose-invert max-w-none">
-                  <p className="whitespace-pre-wrap">{result.verdict.explanation}</p>
-                </div>
-                <div className="mt-8 p-6 bg-gradient-to-r from-amber-50 via-amber-100 to-orange-50 dark:from-amber-950/50 dark:via-amber-900/50 dark:to-orange-950/50 rounded-xl border border-amber-300 dark:border-amber-700 shadow-inner">
-                  <p className="text-xl font-bold text-amber-900 dark:text-amber-200">
-                    {result.verdict.pro_tip.replace(/^TheSimRacingStewards Tip:\s*/, '').replace(/^Tip:\s*/, '')}
+          <div className="mt-12 grid grid-cols-1 lg:grid-cols-2 gap-10 xl:gap-16 relative z-10">
+            {/* LEFT: Video Embed (if URL provided) */}
+            {url && (
+              <div className="order-2 lg:order-1">
+                <div className="sticky top-6 bg-white dark:bg-gray-800 rounded-2xl shadow-2xl overflow-hidden border border-gray-200 dark:border-gray-700">
+                  <div className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white px-6 py-3">
+                    <h3 className="text-xl font-bold">Submitted Incident Video</h3>
+                  </div>
+                  <div className="aspect-video">
+                    <iframe
+                      src={`https://www.youtube-nocookie.com/embed/${getYouTubeId(url)}`}
+                      title="Submitted Incident"
+                      className="w-full h-full"
+                      frameBorder="0"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                    ></iframe>
+                  </div>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mt-3 text-center px-4">
+                    Video is for reference only — this version of the AI tool analyzes text inputs only.
                   </p>
-                </div>
-                <div className="text-center text-sm text-gray-500">
-                  Confidence: <span className="font-bold">{result.verdict.confidence}</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Precedents */}
-            {result.precedents && result.precedents.length > 0 && (
-              <div className="p-8 bg-gradient-to-br from-green-50/70 to-blue-50/70 dark:from-green-950/40 dark:to-blue-950/40 rounded-2xl shadow-xl border border-green-200/50 dark:border-green-700/50">
-                <h3 className="text-2xl font-bold text-green-700 dark:text-green-300 mb-6 text-center">
-                  Precedent Cases (Real Past Incidents)
-                </h3>
-                <div className="space-y-6">
-                  {result.precedents.map((p, i) => (
-                    <div key={i} className="p-6 bg-white dark:bg-gray-800 rounded-xl shadow-md border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-shadow">
-                      <h4 className="text-xl font-bold mb-2">{p.title}</h4>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">
-                        <strong>Ruling:</strong> {p.ruling} | <strong>Fault A:</strong> {p.faultA}%
-                      </p>
-                      <p className="text-gray-700 dark:text-gray-300 italic mt-2">"{p.reason}"</p>
-                      {p.thread && (
-                        <a
-                          href={p.thread}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-block mt-3 text-blue-600 hover:text-blue-800 dark:text-blue-400 font-medium"
-                        >
-                          View Original Reddit Discussion →
-                        </a>
-                      )}
-                    </div>
-                  ))}
                 </div>
               </div>
             )}
+
+            {/* RIGHT: Verdict + Precedents */}
+            <div className={`order-1 lg:order-2 ${url ? '' : 'lg:col-span-2'}`}>
+              {/* Verdict Card */}
+              <div className="bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 mb-10 transform hover:scale-[1.01] transition-transform duration-300">
+                <h2 className="text-3xl font-bold mb-6 text-center text-blue-700 dark:text-blue-400">
+                  Official Verdict
+                </h2>
+                <div className="space-y-6 text-lg">
+                  <div><strong>Rule:</strong> {result.verdict.rule}</div>
+                  <div className="grid grid-cols-2 gap-6">
+                    {Object.entries(result.verdict.fault).map(([car, fault]) => (
+                      <div key={car} className="text-center p-6 bg-gray-50 dark:bg-gray-700 rounded-xl shadow-inner">
+                        <div className="text-2xl font-bold text-gray-900 dark:text-white">{car}</div>
+                        <div className="text-4xl font-black text-red-600 dark:text-red-400 mt-2">{fault}</div>
+                      </div>
+                    ))}
+                  </div>
+                  <div><strong>Car Roles:</strong> {result.verdict.car_identification}</div>
+                  <div className="prose prose-lg dark:prose-invert max-w-none">
+                    <p className="whitespace-pre-wrap">{result.verdict.explanation}</p>
+                  </div>
+                  <div className="mt-8 p-6 bg-gradient-to-r from-amber-50 via-amber-100 to-orange-50 dark:from-amber-950/50 dark:via-amber-900/50 dark:to-orange-950/50 rounded-xl border border-amber-300 dark:border-amber-700 shadow-inner">
+                    <p className="text-xl font-bold text-amber-900 dark:text-amber-200">
+                      {result.verdict.pro_tip.replace(/^TheSimRacingStewards Tip:\s*/, '').replace(/^Tip:\s*/, '')}
+                    </p>
+                  </div>
+                  <div className="text-center text-sm text-gray-500">
+                    Confidence: <span className="font-bold">{result.verdict.confidence}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Precedents */}
+              {result.precedents && result.precedents.length > 0 && (
+                <div className="p-8 bg-gradient-to-br from-green-50/70 to-blue-50/70 dark:from-green-950/40 dark:to-blue-950/40 rounded-2xl shadow-xl border border-green-200/50 dark:border-green-700/50">
+                  <h3 className="text-2xl font-bold text-green-700 dark:text-green-300 mb-6 text-center">
+                    Precedent Cases (Real Past Incidents)
+                  </h3>
+                  <div className="space-y-6">
+                    {result.precedents.map((p, i) => (
+                      <div key={i} className="p-6 bg-white dark:bg-gray-800 rounded-xl shadow-md border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-shadow">
+                        <h4 className="text-xl font-bold mb-2">{p.title}</h4>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">
+                          <strong>Ruling:</strong> {p.ruling} | <strong>Fault A:</strong> {p.faultA}%
+                        </p>
+                        <p className="text-gray-700 dark:text-gray-300 italic mt-2">"{p.reason}"</p>
+                        {p.thread && (
+                          <a
+                            href={p.thread}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-block mt-3 text-blue-600 hover:text-blue-800 dark:text-blue-400 font-medium"
+                          >
+                            View Original Reddit Discussion →
+                          </a>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         )}
       </div>
